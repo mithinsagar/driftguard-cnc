@@ -57,6 +57,12 @@ def thresholds(alpha: float) -> dict:
 
 
 def file_score(win_scores: np.ndarray) -> float:
+    """Window scores -> file score with the aggregation rule recorded in the calibration file (chosen on validation data)."""
+    rule = CAL.get("aggregation", "top10")
+    if rule == "max":
+        return float(win_scores.max())
+    if rule == "mean":
+        return float(win_scores.mean())
     k = max(1, int(np.ceil(0.1 * len(win_scores))))
     return float(np.sort(win_scores)[-k:].mean())
 
@@ -93,7 +99,7 @@ def health():
 @app.get("/v1/config")
 def get_config():
     return {"alpha": STATE["alpha"], "min_alpha": min_alpha(len(CAL["cal_scores"])), **thresholds(STATE["alpha"]),
-            "n_cal": len(CAL["cal_scores"]), "fold": CAL["fold"]}
+            "n_cal": len(CAL["cal_scores"]), "fold": CAL["fold"], "aggregation": CAL.get("aggregation", "top10")}
 
 
 @app.put("/v1/config")

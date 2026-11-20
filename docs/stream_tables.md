@@ -4,6 +4,14 @@
 
 | Scorer | Policy | Achieved FAR at α=5% | Recall at α=5% [95% CI] | Recall at matched FAR 2% | Recall at matched FAR 5% | Mean abs. calibration error |
 |---|---|---|---|---|---|---|
+| AE | frozen threshold | 21.9% | 41.4% [29.8%, 53.8%] | n/a | n/a | 15.0% |
+| AE | naive self-labelling | 26.8% | 44.3% [32.4%, 56.7%] | n/a | n/a | 22.0% |
+| AE | delayed-label admission (k=20) | 7.3% | 38.6% [27.2%, 51.0%] | 20.6% | 34.0% | 2.2% |
+| AE | delayed-label admission (k=5) | 6.5% | 38.6% [27.2%, 51.0%] | 20.5% | 35.0% | 1.6% |
+| AE | ACI, delayed errors | 5.9% | 35.7% [24.6%, 48.1%] | 20.2% | 33.7% | 0.8% |
+| AE | IBM W1-ACAS (label-free) | 4.8% | 32.9% [22.1%, 45.1%] | 16.9% | 33.1% | 0.4% |
+| AE | delayed-label + ACI (k=20) | 4.9% | 34.3% [23.3%, 46.6%] | 25.6% | 34.6% | 0.2% |
+| AE | delayed-label + ACI (k=5, proposed) | 4.8% | 34.3% [23.3%, 46.6%] | 27.6% | 35.0% | 0.2% |
 | B0 | frozen threshold | 8.0% | 50.0% [37.8%, 62.2%] | 30.3% | 40.3% | 3.5% |
 | B0 | naive self-labelling | 15.6% | 54.3% [41.9%, 66.3%] | n/a | 38.6% | 12.2% |
 | B0 | delayed-label admission (k=20) | 6.1% | 47.1% [35.1%, 59.4%] | n/a | 44.1% | 1.5% |
@@ -33,6 +41,14 @@
 
 | Scorer | Policy | Achieved FAR at α=5% | Recall at α=5% [95% CI] | Recall at matched FAR 2% | Recall at matched FAR 5% | Mean abs. calibration error |
 |---|---|---|---|---|---|---|
+| AE | frozen threshold | 21.9% | 41.4% [29.8%, 53.8%] | n/a | n/a | 15.0% |
+| AE | naive self-labelling | 26.9% | 47.1% [35.1%, 59.4%] | n/a | n/a | 22.2% |
+| AE | delayed-label admission (k=20) | 7.3% | 35.7% [24.6%, 48.1%] | 20.0% | 33.9% | 2.2% |
+| AE | delayed-label admission (k=5) | 6.5% | 35.7% [24.6%, 48.1%] | 20.0% | 34.3% | 1.6% |
+| AE | ACI, delayed errors | 5.4% | 35.7% [24.6%, 48.1%] | 20.0% | 34.8% | 0.8% |
+| AE | IBM W1-ACAS (label-free) | 5.1% | 32.9% [22.1%, 45.1%] | 17.0% | 32.1% | 0.7% |
+| AE | delayed-label + ACI (k=20) | 4.9% | 37.1% [25.9%, 49.5%] | 19.8% | 37.3% | 0.2% |
+| AE | delayed-label + ACI (k=5, proposed) | 4.8% | 37.1% [25.9%, 49.5%] | 21.2% | 37.5% | 0.2% |
 | B0 | frozen threshold | 8.0% | 50.0% [37.8%, 62.2%] | 30.3% | 40.3% | 3.5% |
 | B0 | naive self-labelling | 16.3% | 52.9% [40.6%, 64.9%] | n/a | 36.1% | 12.3% |
 | B0 | delayed-label admission (k=20) | 6.1% | 48.6% [36.4%, 60.8%] | n/a | 43.9% | 1.5% |
@@ -62,6 +78,14 @@
 
 | Scorer | Policy | Achieved FAR at α=5% | Recall at α=5% [95% CI] | Recall at matched FAR 2% | Recall at matched FAR 5% | Mean abs. calibration error |
 |---|---|---|---|---|---|---|
+| AE | frozen threshold | 3.1% | 47.1% [23.0%, 72.2%] | 35.4% | 67.5% | 3.3% |
+| AE | naive self-labelling | 5.8% | 52.9% [27.8%, 77.0%] | 24.5% | 47.9% | 1.0% |
+| AE | delayed-label admission (k=20) | 4.2% | 47.1% [23.0%, 72.2%] | 29.4% | 53.9% | 1.7% |
+| AE | delayed-label admission (k=5) | 4.2% | 41.2% [18.4%, 67.1%] | 28.5% | 54.2% | 1.7% |
+| AE | ACI, delayed errors | 3.5% | 52.9% [27.8%, 77.0%] | 32.5% | 60.5% | 1.6% |
+| AE | IBM W1-ACAS (label-free) | 3.8% | 41.2% [18.4%, 67.1%] | 26.6% | 42.4% | 1.9% |
+| AE | delayed-label + ACI (k=20) | 4.4% | 52.9% [27.8%, 77.0%] | 29.5% | 55.1% | 0.3% |
+| AE | delayed-label + ACI (k=5, proposed) | 4.4% | 47.1% [23.0%, 72.2%] | 29.4% | 49.6% | 0.3% |
 | B0 | frozen threshold | 2.9% | 64.7% [38.3%, 85.8%] | 64.7% | 76.5% | 3.1% |
 | B0 | naive self-labelling | 6.0% | 70.6% [44.0%, 89.7%] | n/a | 61.9% | 1.5% |
 | B0 | delayed-label admission (k=20) | 4.2% | 70.6% [44.0%, 89.7%] | 54.5% | 74.1% | 1.8% |
@@ -91,6 +115,14 @@
 
 | Scorer | Policy | Achieved FAR at α=5% | Recall at α=5% [95% CI] | Recall at matched FAR 2% | Recall at matched FAR 5% | Mean abs. calibration error |
 |---|---|---|---|---|---|---|
+| AE | frozen threshold | 3.1% | 47.1% [23.0%, 72.2%] | 35.4% | 67.5% | 3.3% |
+| AE | naive self-labelling | 6.0% | 58.8% [32.9%, 81.6%] | n/a | 58.8% | 1.4% |
+| AE | delayed-label admission (k=20) | 4.2% | 58.8% [32.9%, 81.6%] | 16.5% | 65.6% | 1.7% |
+| AE | delayed-label admission (k=5) | 4.2% | 58.8% [32.9%, 81.6%] | 16.7% | 65.6% | 1.6% |
+| AE | ACI, delayed errors | 3.5% | 47.1% [23.0%, 72.2%] | 30.9% | 66.4% | 1.6% |
+| AE | IBM W1-ACAS (label-free) | 3.3% | 52.9% [27.8%, 77.0%] | 39.8% | 65.4% | 2.2% |
+| AE | delayed-label + ACI (k=20) | 4.4% | 58.8% [32.9%, 81.6%] | 17.8% | 61.0% | 0.2% |
+| AE | delayed-label + ACI (k=5, proposed) | 4.4% | 64.7% [38.3%, 85.8%] | 17.8% | 66.1% | 0.3% |
 | B0 | frozen threshold | 2.9% | 64.7% [38.3%, 85.8%] | 64.7% | 76.5% | 3.1% |
 | B0 | naive self-labelling | 6.0% | 70.6% [44.0%, 89.7%] | n/a | 58.8% | 1.6% |
 | B0 | delayed-label admission (k=20) | 4.2% | 70.6% [44.0%, 89.7%] | 54.5% | 74.1% | 1.8% |

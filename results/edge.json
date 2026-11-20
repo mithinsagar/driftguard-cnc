@@ -1,38 +1,38 @@
 {
  "alpha": 0.05,
- "aggregation": "top10",
+ "aggregation": "mean",
  "params": 150179,
  "onnx_fp32": {
-  "score_pearson_vs_torch": 0.9999999999999938,
+  "score_pearson_vs_torch": 0.9999999999999928,
   "verdict_agreement_naive": 1.0,
   "verdict_agreement_recalibrated": 1.0,
-  "far_recalibrated": 0.05530973451327434,
-  "recall_recalibrated": 0.35294117647058826,
+  "far_recalibrated": 0.030973451327433628,
+  "recall_recalibrated": 0.47058823529411764,
   "size_kb": 595.8,
   "latency_single_window_1thread": {
-   "p50_ms": 1.2503335,
-   "p95_ms": 1.2939202,
-   "p99_ms": 1.3258375900000001
+   "p50_ms": 1.1701044999999999,
+   "p95_ms": 1.20112915,
+   "p99_ms": 1.21725667
   },
-  "rss_delta_mb": 4.5
+  "rss_delta_mb": 3.1
  },
  "onnx_int8": {
-  "score_pearson_vs_torch": 0.9992372495027356,
-  "verdict_agreement_naive": 0.997867803837953,
-  "verdict_agreement_recalibrated": 1.0,
-  "far_recalibrated": 0.05530973451327434,
-  "recall_recalibrated": 0.35294117647058826,
+  "score_pearson_vs_torch": 0.998403801142037,
+  "verdict_agreement_naive": 0.9957356076759062,
+  "verdict_agreement_recalibrated": 0.997867803837953,
+  "far_recalibrated": 0.030973451327433628,
+  "recall_recalibrated": 0.4117647058823529,
   "size_kb": 188.5,
   "latency_single_window_1thread": {
-   "p50_ms": 1.3346665,
-   "p95_ms": 1.6655524000000002,
-   "p99_ms": 1.8094424099999997
+   "p50_ms": 1.1865,
+   "p95_ms": 1.2232542,
+   "p99_ms": 1.26413917
   },
-  "rss_delta_mb": 0.1
+  "rss_delta_mb": 0.0
  },
  "torch_fp32": {
-  "far": 0.05530973451327434,
-  "recall": 0.35294117647058826
+  "far": 0.030973451327433628,
+  "recall": 0.47058823529411764
  },
  "hardware": "Apple M5 CPU, ONNX Runtime CPUExecutionProvider, 1 intra-op thread; latency = forward pass + NumPy loss"
 }

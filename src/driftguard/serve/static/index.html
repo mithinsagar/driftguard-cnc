@@ -60,7 +60,7 @@
     <section class="card"><h2>Window anomaly scores (INT8 ONNX autoencoder)</h2><canvas id="score"></canvas>
       <div class="legend">
         <span><i class="sw" style="background:#58a6ff"></i>window score</span>
-        <span><i class="sw" style="background:#e6edf3"></i>running file score (top 10%)</span>
+        <span><i class="sw" style="background:#e6edf3"></i>running file score</span>
         <span><i class="sw" style="background:#3fb68b"></i>conformal threshold</span>
         <span><i class="sw" style="background:#d9a03f"></i>static percentile threshold</span>
       </div>
@@ -93,7 +93,10 @@ function drawScores(ws, n, thr, sthr) {
   line(g, [10, W - 10], [sy(sthr), sy(sthr)], "#d9a03f", 1.4, [6, 4]);
   if (!shown.length) return;
   line(g, shown.map((_, i) => sx(i)), shown.map(sy), "#58a6ff", 1.2);
-  const run = shown.map((_, i) => { const s = shown.slice(0, i + 1).sort((a, b) => b - a); const k = Math.max(1, Math.ceil(0.1 * s.length)); return s.slice(0, k).reduce((a, b) => a + b, 0) / k; });
+  const agg = (cfg && cfg.aggregation) || "top10";
+  const run = shown.map((_, i) => { const s = shown.slice(0, i + 1).sort((a, b) => b - a);
+    if (agg === "max") return s[0]; if (agg === "mean") return s.reduce((a, b) => a + b, 0) / s.length;
+    const k = Math.max(1, Math.ceil(0.1 * s.length)); return s.slice(0, k).reduce((a, b) => a + b, 0) / k; });
   line(g, run.map((_, i) => sx(i)), run.map(sy), "#e6edf3", 2);
 }
 function kv(obj) { $("kv").innerHTML = Object.entries(obj).map(([k, v]) => `<div>${k}</div><div>${v}</div>`).join(""); }

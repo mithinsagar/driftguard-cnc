@@ -3,7 +3,7 @@
 set -e
 PY=.venv/bin/python
 for proto in lomo time; do
-  for scorer in B0 B1 B2; do
+  for scorer in B0 B1 B2 AE; do
     for scen in burst natural; do
       $PY scripts/run_stream.py --proto $proto --scorer $scorer --sweep --scenario $scen > /dev/null 2>&1
     done

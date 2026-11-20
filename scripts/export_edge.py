@@ -106,7 +106,8 @@ def main(seed: int = 0):
 
     s_fp32 = OnnxScorer(str(fp32), ae.mu, ae.sd)
     s_int8 = OnnxScorer(str(int8), ae.mu, ae.sd)
-    rule = "top10"
+    # use exactly the aggregation rule chosen on validation data for this fold by run_eval.py
+    rule = json.loads(Path("results/raw/time/AE_seed0.json").read_text())["folds"][0]["aggregation"]
     cal, test = fd.idx["cal_good"], fd.idx["test"]
     y = (df.label.to_numpy()[test] == "bad")
     res = {"alpha": ALPHA, "aggregation": rule, "params": ae.n_params()}

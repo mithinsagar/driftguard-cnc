@@ -1,7 +1,9 @@
 PY := .venv/bin/python
 SEEDS ?= 0
 
-.PHONY: setup data eval stream export tables verify test lint demo docker clean
+.PHONY: setup data eval stream export tables verify test lint demo docker clean all
+
+all: data eval stream export tables test
 
 setup:            ## virtual environment with pinned dependencies
 	/opt/homebrew/bin/python3.12 -m venv .venv || python3 -m venv .venv
@@ -17,15 +19,20 @@ eval:             ## all scorers x calibration strategies x protocols
 	for s in $(SEEDS); do $(PY) scripts/run_eval.py --proto lopo lomo time --scorers B0 B1 B2 --seed $$s; done
 	for s in $(SEEDS); do $(PY) scripts/run_eval.py --proto lopo lomo time --scorers AE --seed $$s; done
 
-stream:           ## streaming contamination study (claim C2)
-	$(PY) scripts/run_stream.py --proto lomo --scorer B1 --alpha 0.05
-	$(PY) scripts/run_stream.py --proto time --scorer B1 --alpha 0.05
+stream:           ## streaming label-delay study (claim C2): alpha sweeps, all scorers, both stream orders, label coverage
+	./scripts/run_all_streams.sh
+	$(PY) scripts/run_fewshot.py --scorer B2 --alpha 0.05
+	$(PY) scripts/run_fewshot.py --scorer B0 --alpha 0.05
 
 export:           ## ONNX FP32 + static INT8, parity and latency (claim C3)
 	$(PY) scripts/export_edge.py
 
-tables:           ## results/summary.json, docs/results_tables.md, figures
+tables:           ## results/summary.json, docs/*_tables.md, figures, README results, model card
 	$(PY) scripts/make_tables.py
+	$(PY) scripts/make_stream_tables.py
+	$(PY) scripts/make_headline.py
+	$(PY) scripts/update_readme.py
+	$(PY) scripts/update_model_card.py
 
 verify:           ## re-run a fast subset and compare to committed results within tolerance
 	$(PY) scripts/verify.py
