@@ -1,5 +1,5 @@
 .venv/
-data/
+/data/
 
 __pycache__/
 *.pyc
@@ -10,6 +10,7 @@ __pycache__/
 results_*.log
 results/raw/*/*_quick.json
 results/scores/*_quick.npz
-artifacts/*
-!artifacts/ae_int8.onnx
-!artifacts/calibration.json
+/artifacts/*
+!/artifacts/ae_int8.onnx
+!/artifacts/calibration.json
+!/artifacts/ae_time_fold.pt
