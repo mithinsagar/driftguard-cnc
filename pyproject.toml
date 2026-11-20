@@ -1,0 +1,20 @@
+[project]
+name = "driftguard"
+version = "0.1.0"
+description = "False-alarm-controlled vibration anomaly detection on the Bosch CNC Machining dataset"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
