@@ -113,13 +113,26 @@ def thresholds_for_test(file_scores, emb, df, fd: FoldData, alpha: float, bandwi
     return out
 
 
-def evaluate(file_scores, df, fd: FoldData, thr: dict, alpha: float) -> dict:
+def w1acas_test_flags(file_scores, df, fd: FoldData, alpha: float) -> np.ndarray:
+    """Baseline C5: IBM W1-ACAS run online over the test recordings in chronological order."""
+    from driftguard.calibration.ibm_w1acas import w1acas_flags
+
+    test, cal = fd.idx["test"], fd.idx["cal_good"]
+    order = np.lexsort((df["index"].to_numpy()[test], df["t_order"].to_numpy()[test]))
+    cal_order = np.lexsort((df["index"].to_numpy()[cal], df["t_order"].to_numpy()[cal]))
+    flags_ordered = w1acas_flags(file_scores[cal][cal_order], file_scores[test][order], alpha)
+    flags = np.empty(len(test), dtype=bool)
+    flags[order] = flags_ordered
+    return flags
+
+
+def evaluate(file_scores, df, fd: FoldData, thr: dict, alpha: float, extra_flags: dict | None = None) -> dict:
     test = fd.idx["test"]
     y = (df["label"].to_numpy()[test] == "bad").astype(int)
     s = file_scores[test]
     res = {}
-    for name, t in thr.items():
-        flag = s > t
+    items = [(k, s > t, t) for k, t in thr.items()] + [(k, f, np.zeros(len(f))) for k, f in (extra_flags or {}).items()]
+    for name, flag, t in items:
         n_good, n_bad = int((y == 0).sum()), int(y.sum())
         res[name] = {
             "alpha": alpha, "n_good": n_good, "n_bad": n_bad,

@@ -18,8 +18,8 @@ from driftguard.calibration.stream import order_stream, rolling_far, simulate  #
 from driftguard.data import splits  # noqa: E402
 from driftguard.eval import engine  # noqa: E402
 
-POLICIES = ("P0_frozen", "P1_naive", "P2_delayed", "P3_aci")
-COLORS = {"P0_frozen": "#8a99a8", "P1_naive": "#b04a4a", "P2_delayed": "#4a7fb5", "P3_aci": "#5b8a52"}
+POLICIES = ("P0_frozen", "P1_naive", "P2_delayed", "P3_aci", "P4_w1acas")
+COLORS = {"P0_frozen": "#8a99a8", "P1_naive": "#b04a4a", "P2_delayed": "#4a7fb5", "P3_aci": "#5b8a52", "P4_w1acas": "#c0392b"}
 
 
 def main(proto: str, scorer: str, seed: int, alpha: float, delays=(5, 20, 50), gammas=(0.005, 0.01, 0.05)):
@@ -36,13 +36,14 @@ def main(proto: str, scorer: str, seed: int, alpha: float, delays=(5, 20, 50), g
             order = order_stream(df.t_order.to_numpy()[test], df["index"].to_numpy()[test], is_bad_all, scen, seed)
             s, b = fs[test][order], is_bad_all[order]
             configs = [("P0_frozen", {}), ("P1_naive", {})] + [("P2_delayed", {"delay": d}) for d in delays] + \
-                      [("P3_aci", {"delay": 20, "gamma": g}) for g in gammas]
+                      [("P3_aci", {"delay": 20, "gamma": g}) for g in gammas] + [("P4_w1acas", {})]
             for pol, kw in configs:
                 r = simulate(s, b, cal, alpha, pol, **kw)
                 rows.append({"fold": fd.name, "scenario": scen, "policy": pol, **kw, "n": len(s), "n_bad": int(b.sum()),
                              **{k: r[k] for k in ("far", "far_after_first_third", "recall", "threshold_start", "threshold_end")}})
                 if (pol, kw.get("delay", 20), kw.get("gamma", 0.01)) in {("P0_frozen", 20, 0.01), ("P1_naive", 20, 0.01),
-                                                                          ("P2_delayed", 20, 0.01), ("P3_aci", 20, 0.01)}:
+                                                                          ("P2_delayed", 20, 0.01), ("P3_aci", 20, 0.01),
+                                                                          ("P4_w1acas", 20, 0.01)}:
                     curves[(fd.name, scen, pol)] = (r["thresholds"], rolling_far(r["flags"], b), b)
     res = pd.DataFrame(rows)
     Path("results").mkdir(exist_ok=True)
@@ -58,7 +59,8 @@ def main(proto: str, scorer: str, seed: int, alpha: float, delays=(5, 20, 50), g
     fig, axes = plt.subplots(2, 1, figsize=(8, 5), sharex=True)
     for pol in POLICIES:
         thr, rf, b = curves[(big, "burst", pol)]
-        axes[0].plot(thr, color=COLORS[pol], label=pol, lw=1.4)
+        if not np.all(np.isnan(thr)):
+            axes[0].plot(thr, color=COLORS[pol], label=pol, lw=1.4)
         axes[1].plot(rf, color=COLORS[pol], lw=1.4)
     xs = np.flatnonzero(b)
     for ax in axes:

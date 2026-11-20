@@ -16,10 +16,10 @@ from scipy.stats import beta  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from driftguard.eval.engine import ALPHAS  # noqa: E402
 
-STRATS = ["C0_static", "C1_split", "C2_mondrian", "C4_weighted"]
+STRATS = ["C0_static", "C1_split", "C2_mondrian", "C4_weighted", "C5_ibm_w1acas"]
 LABEL = {"C0_static": "static percentile", "C1_split": "split conformal", "C2_mondrian": "Mondrian (per process)",
-         "C4_weighted": "similarity-weighted (proposed)"}
-COLOR = {"C0_static": "#b7793a", "C1_split": "#8a99a8", "C2_mondrian": "#6d5bb0", "C4_weighted": "#2f7d4f"}
+         "C4_weighted": "similarity-weighted (proposed)", "C5_ibm_w1acas": "IBM W1-ACAS (ICLR 2026)"}
+COLOR = {"C0_static": "#b7793a", "C1_split": "#8a99a8", "C2_mondrian": "#6d5bb0", "C4_weighted": "#2f7d4f", "C5_ibm_w1acas": "#c0392b"}
 SCORER_NAME = {"B0": "RMS heuristic", "B1": "Isolation Forest", "B2": "XGBoost (supervised)", "AE": "1D-CNN autoencoder"}
 
 
@@ -59,6 +59,8 @@ def summarise(runs):
         proto, scorer, seed = run["protocol"], run["scorer"], run["provenance"]["seed"]
         for a in ALPHAS:
             for st in STRATS:
+                if st not in run["folds"][0]["by_alpha"][str(a)]:
+                    continue
                 per = [f["by_alpha"][str(a)][st] for f in run["folds"]]
                 fars = np.array([r["far"] for r in per], float)
                 err = np.abs(fars - a)
@@ -129,6 +131,8 @@ def figure_target_vs_achieved(df: pd.DataFrame, scorer: str):
         sub = df[(df.protocol == proto) & (df.scorer == scorer) & df.alpha.notna()]
         for st in STRATS:
             s = sub[sub.strategy == st].sort_values("alpha")
+            if s.empty:
+                continue
             lo = [c[0] for c in s.pooled_far_ci]
             hi = [c[1] for c in s.pooled_far_ci]
             ax.plot(s.alpha, s.pooled_far, "o-", color=COLOR[st], label=LABEL[st], lw=1.6, ms=4)
@@ -150,11 +154,12 @@ def figure_per_fold(df: pd.DataFrame, scorer: str, proto: str = "lopo", a: float
     if sub.empty:
         return
     fig, ax = plt.subplots(figsize=(7.5, 3.4))
-    for i, st in enumerate(STRATS):
+    strats = [st for st in STRATS if not sub[sub.strategy == st].empty]
+    for i, st in enumerate(strats):
         fars = np.array(sub[sub.strategy == st].folds_far.iloc[0])
         ax.scatter(np.full(len(fars), i) + np.linspace(-0.15, 0.15, len(fars)), fars, color=COLOR[st], s=18)
     ax.axhline(a, color="black", ls="--", lw=1)
-    ax.set_xticks(range(len(STRATS)), [LABEL[s] for s in STRATS], fontsize=8)
+    ax.set_xticks(range(len(strats)), [LABEL[s] for s in strats], fontsize=7)
     ax.set_ylabel("achieved FAR per held-out process")
     ax.set_title(f"Leave-one-process-out, α = {a}: every dot is one unseen machining process ({SCORER_NAME.get(scorer, scorer)})", fontsize=9)
     ax.grid(alpha=0.25, axis="y")

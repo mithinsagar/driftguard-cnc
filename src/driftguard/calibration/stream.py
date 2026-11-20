@@ -34,6 +34,17 @@ def simulate(scores: np.ndarray, is_bad: np.ndarray, cal_scores: np.ndarray, alp
              delay: int = 20, gamma: float = 0.01, buffer_size: int = 300) -> dict:
     """Replay `scores` (already in stream order). Returns per-step thresholds and flags plus summary metrics."""
     n = len(scores)
+    if policy == "P4_w1acas":
+        from driftguard.calibration.ibm_w1acas import w1acas_pvalues
+
+        pv = w1acas_pvalues(cal_scores, scores, alpha)
+        flags = pv < alpha
+        good, late = ~is_bad, np.arange(n) >= n // 3
+        return {"thresholds": np.full(n, np.nan), "flags": flags, "pvalues": pv,
+                "far": float(flags[good].mean()) if good.any() else float("nan"),
+                "far_after_first_third": float(flags[good & late].mean()) if (good & late).any() else float("nan"),
+                "recall": float(flags[is_bad].mean()) if is_bad.any() else float("nan"),
+                "threshold_start": float("nan"), "threshold_end": float("nan")}
     thr = np.empty(n)
     flags = np.zeros(n, dtype=bool)
     buf = RollingBuffer(cal_scores, size=buffer_size)

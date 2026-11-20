@@ -25,6 +25,11 @@ from driftguard.models.autoencoder import AEScorer  # noqa: E402
 from driftguard.models.scorers import IForestScorer, RMSScorer, XGBScorer, aggregate  # noqa: E402
 
 RES = Path("results")
+try:
+    import tsfm_public  # noqa: F401  (IBM granite-tsfm, baseline C5)
+    USE_W1ACAS = True
+except ImportError:
+    USE_W1ACAS = False
 _SIG: dict[int, np.ndarray] = {}
 
 
@@ -105,7 +110,8 @@ def run(protos, scorer_names, seed, quick=False):
                        "n_cal": int(len(fd.idx["cal_good"]))}
                 for a in engine.ALPHAS:
                     thr = engine.thresholds_for_test(fs, emb, df, fd, a, bw)
-                    rec["by_alpha"][str(a)] = engine.evaluate(fs, df, fd, thr, a)
+                    extra = {"C5_ibm_w1acas": engine.w1acas_test_flags(fs, df, fd, a)} if USE_W1ACAS else None
+                    rec["by_alpha"][str(a)] = engine.evaluate(fs, df, fd, thr, a, extra)
                 rec["seconds"] = round(time.time() - t0, 1)
                 out[name]["folds"].append(rec)
                 file_scores_store[name][fd.name] = fs.astype(np.float32)
