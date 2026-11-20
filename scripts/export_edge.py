@@ -67,10 +67,19 @@ def main(seed: int = 0):
                 out.append(w[rng.choice(len(w), min(k, len(w)), replace=False)])
         return np.concatenate(out)
 
-    tr, va = sample(fd.idx["train_good"], 24), sample(fd.idx["val_good"], 6)
-    ae = AEScorer(seed=seed).fit(tr, va)
+    tr = sample(fd.idx["train_good"], 24)
+    ae = AEScorer(seed=seed)
+    ckpt = ART / "ae_time_fold.pt"
+    if ckpt.exists():  # the network evaluated by run_eval.py on the chronological fold
+        from driftguard.models.autoencoder import ConvAE
+
+        state = torch.load(ckpt, weights_only=False)
+        ae.model = ConvAE()
+        ae.model.load_state_dict(state["state_dict"])
+        ae.mu, ae.sd = state["mu"], state["sd"]
+    else:
+        ae.fit(tr, sample(fd.idx["val_good"], 6))
     model = ae.model.to("cpu").eval()
-    torch.save({"state_dict": model.state_dict(), "mu": ae.mu, "sd": ae.sd}, ART / "ae_time_fold.pt")
 
     fp32 = ART / "ae_fp32.onnx"
     torch.onnx.export(model, torch.zeros(1, 3, 2000), fp32, input_names=["x"], output_names=["x_hat"],

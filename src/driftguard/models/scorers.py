@@ -60,7 +60,7 @@ class XGBScorer:
         pos = max(1, int(y.sum()))
         self.model = XGBClassifier(
             n_estimators=300, max_depth=5, learning_rate=0.08, subsample=0.8, colsample_bytree=0.8,
-            scale_pos_weight=(len(y) - pos) / pos, random_state=self.seed, n_jobs=-1, eval_metric="aucpr",
+            scale_pos_weight=(len(y) - pos) / pos, random_state=self.seed, n_jobs=1, tree_method="hist", eval_metric="aucpr",
         ).fit(X, y)
         return self
 

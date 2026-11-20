@@ -1,0 +1,858 @@
+{
+ "protocol": "lomo",
+ "scorer": "B2",
+ "folds": [
+  {
+   "fold": "lomo_M01",
+   "aggregation": "max",
+   "val_pr_auc_by_rule": {
+    "max": 1.0,
+    "mean": 1.0,
+    "top10": 1.0
+   },
+   "bandwidth": {
+    "factor": 0.25,
+    "median_dist": 5.977912878603265,
+    "pseudo_shift_errors": {
+     "0.25": 0.05,
+     "0.5": 0.05,
+     "1.0": 0.07319595526275471,
+     "2.0": 0.07729431591849241,
+     "4.0": 0.07729431591849241
+    }
+   },
+   "threshold_free": {
+    "pr_auc": 0.9177343950507488,
+    "roc_auc": 0.9841722255912675,
+    "prevalence": 0.06551059730250482
+   },
+   "by_alpha": {
+    "0.01": {
+     "C0_static": {
+      "alpha": 0.01,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 26,
+      "recall": 0.7647058823529411,
+      "inf_thresholds": 0
+     },
+     "C1_split": {
+      "alpha": 0.01,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 24,
+      "recall": 0.7058823529411765,
+      "inf_thresholds": 0
+     },
+     "C2_mondrian": {
+      "alpha": 0.01,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 0,
+      "recall": 0.0,
+      "inf_thresholds": 519
+     },
+     "C4_weighted": {
+      "alpha": 0.01,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 0,
+      "recall": 0.0,
+      "inf_thresholds": 519
+     },
+     "C4f_weighted_fallback": {
+      "alpha": 0.01,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 24,
+      "recall": 0.7058823529411765,
+      "inf_thresholds": 0,
+      "fallback_share": 1.0
+     },
+     "C5_ibm_w1acas": {
+      "alpha": 0.01,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 1,
+      "far": 0.002061855670103093,
+      "detected": 13,
+      "recall": 0.38235294117647056,
+      "inf_thresholds": 0
+     }
+    },
+    "0.02": {
+     "C0_static": {
+      "alpha": 0.02,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 26,
+      "recall": 0.7647058823529411,
+      "inf_thresholds": 0
+     },
+     "C1_split": {
+      "alpha": 0.02,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 26,
+      "recall": 0.7647058823529411,
+      "inf_thresholds": 0
+     },
+     "C2_mondrian": {
+      "alpha": 0.02,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 0,
+      "recall": 0.0,
+      "inf_thresholds": 519
+     },
+     "C4_weighted": {
+      "alpha": 0.02,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 0,
+      "recall": 0.0,
+      "inf_thresholds": 519
+     },
+     "C4f_weighted_fallback": {
+      "alpha": 0.02,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 26,
+      "recall": 0.7647058823529411,
+      "inf_thresholds": 0,
+      "fallback_share": 1.0
+     },
+     "C5_ibm_w1acas": {
+      "alpha": 0.02,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 4,
+      "far": 0.008247422680412371,
+      "detected": 18,
+      "recall": 0.5294117647058824,
+      "inf_thresholds": 0
+     }
+    },
+    "0.05": {
+     "C0_static": {
+      "alpha": 0.05,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 2,
+      "far": 0.004123711340206186,
+      "detected": 28,
+      "recall": 0.8235294117647058,
+      "inf_thresholds": 0
+     },
+     "C1_split": {
+      "alpha": 0.05,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 7,
+      "far": 0.01443298969072165,
+      "detected": 29,
+      "recall": 0.8529411764705882,
+      "inf_thresholds": 0
+     },
+     "C2_mondrian": {
+      "alpha": 0.05,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 5,
+      "recall": 0.14705882352941177,
+      "inf_thresholds": 343
+     },
+     "C4_weighted": {
+      "alpha": 0.05,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 0,
+      "recall": 0.0,
+      "inf_thresholds": 519
+     },
+     "C4f_weighted_fallback": {
+      "alpha": 0.05,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 7,
+      "far": 0.01443298969072165,
+      "detected": 29,
+      "recall": 0.8529411764705882,
+      "inf_thresholds": 0,
+      "fallback_share": 1.0
+     },
+     "C5_ibm_w1acas": {
+      "alpha": 0.05,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 22,
+      "far": 0.04536082474226804,
+      "detected": 23,
+      "recall": 0.6764705882352942,
+      "inf_thresholds": 0
+     }
+    },
+    "0.1": {
+     "C0_static": {
+      "alpha": 0.1,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 17,
+      "far": 0.03505154639175258,
+      "detected": 30,
+      "recall": 0.8823529411764706,
+      "inf_thresholds": 0
+     },
+     "C1_split": {
+      "alpha": 0.1,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 19,
+      "far": 0.03917525773195876,
+      "detected": 30,
+      "recall": 0.8823529411764706,
+      "inf_thresholds": 0
+     },
+     "C2_mondrian": {
+      "alpha": 0.1,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 11,
+      "far": 0.02268041237113402,
+      "detected": 28,
+      "recall": 0.8235294117647058,
+      "inf_thresholds": 28
+     },
+     "C4_weighted": {
+      "alpha": 0.1,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 0,
+      "recall": 0.0,
+      "inf_thresholds": 519
+     },
+     "C4f_weighted_fallback": {
+      "alpha": 0.1,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 19,
+      "far": 0.03917525773195876,
+      "detected": 30,
+      "recall": 0.8823529411764706,
+      "inf_thresholds": 0,
+      "fallback_share": 1.0
+     },
+     "C5_ibm_w1acas": {
+      "alpha": 0.1,
+      "n_good": 485,
+      "n_bad": 34,
+      "false_alarms": 42,
+      "far": 0.0865979381443299,
+      "detected": 28,
+      "recall": 0.8235294117647058,
+      "inf_thresholds": 0
+     }
+    }
+   },
+   "scorer_info": {},
+   "n_cal": 230,
+   "seconds": 3.7
+  },
+  {
+   "fold": "lomo_M02",
+   "aggregation": "max",
+   "val_pr_auc_by_rule": {
+    "max": 1.0,
+    "mean": 1.0,
+    "top10": 1.0
+   },
+   "bandwidth": {
+    "factor": 2.0,
+    "median_dist": 5.78228299095131,
+    "pseudo_shift_errors": {
+     "0.25": 0.05,
+     "0.5": 0.05,
+     "1.0": 0.011329391569712001,
+     "2.0": 0.006227350753385472,
+     "4.0": 0.01745184054930383
+    }
+   },
+   "threshold_free": {
+    "pr_auc": 0.3703911198916366,
+    "roc_auc": 0.8466894771594934,
+    "prevalence": 0.04192546583850932
+   },
+   "by_alpha": {
+    "0.01": {
+     "C0_static": {
+      "alpha": 0.01,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 165,
+      "far": 0.26742301458670986,
+      "detected": 22,
+      "recall": 0.8148148148148148,
+      "inf_thresholds": 0
+     },
+     "C1_split": {
+      "alpha": 0.01,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 151,
+      "far": 0.24473257698541329,
+      "detected": 22,
+      "recall": 0.8148148148148148,
+      "inf_thresholds": 0
+     },
+     "C2_mondrian": {
+      "alpha": 0.01,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 0,
+      "recall": 0.0,
+      "inf_thresholds": 644
+     },
+     "C4_weighted": {
+      "alpha": 0.01,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 149,
+      "far": 0.24149108589951376,
+      "detected": 20,
+      "recall": 0.7407407407407407,
+      "inf_thresholds": 2
+     },
+     "C4f_weighted_fallback": {
+      "alpha": 0.01,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 149,
+      "far": 0.24149108589951376,
+      "detected": 22,
+      "recall": 0.8148148148148148,
+      "inf_thresholds": 0,
+      "fallback_share": 0.0031055900621117516
+     },
+     "C5_ibm_w1acas": {
+      "alpha": 0.01,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 11,
+      "far": 0.017828200972447326,
+      "detected": 3,
+      "recall": 0.1111111111111111,
+      "inf_thresholds": 0
+     }
+    },
+    "0.02": {
+     "C0_static": {
+      "alpha": 0.02,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 171,
+      "far": 0.2771474878444084,
+      "detected": 22,
+      "recall": 0.8148148148148148,
+      "inf_thresholds": 0
+     },
+     "C1_split": {
+      "alpha": 0.02,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 169,
+      "far": 0.2739059967585089,
+      "detected": 22,
+      "recall": 0.8148148148148148,
+      "inf_thresholds": 0
+     },
+     "C2_mondrian": {
+      "alpha": 0.02,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 0,
+      "recall": 0.0,
+      "inf_thresholds": 644
+     },
+     "C4_weighted": {
+      "alpha": 0.02,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 161,
+      "far": 0.26094003241491087,
+      "detected": 22,
+      "recall": 0.8148148148148148,
+      "inf_thresholds": 0
+     },
+     "C4f_weighted_fallback": {
+      "alpha": 0.02,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 161,
+      "far": 0.26094003241491087,
+      "detected": 22,
+      "recall": 0.8148148148148148,
+      "inf_thresholds": 0,
+      "fallback_share": 0.0
+     },
+     "C5_ibm_w1acas": {
+      "alpha": 0.02,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 23,
+      "far": 0.03727714748784441,
+      "detected": 12,
+      "recall": 0.4444444444444444,
+      "inf_thresholds": 0
+     }
+    },
+    "0.05": {
+     "C0_static": {
+      "alpha": 0.05,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 194,
+      "far": 0.31442463533225284,
+      "detected": 24,
+      "recall": 0.8888888888888888,
+      "inf_thresholds": 0
+     },
+     "C1_split": {
+      "alpha": 0.05,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 203,
+      "far": 0.32901134521880065,
+      "detected": 24,
+      "recall": 0.8888888888888888,
+      "inf_thresholds": 0
+     },
+     "C2_mondrian": {
+      "alpha": 0.05,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 6,
+      "far": 0.009724473257698542,
+      "detected": 2,
+      "recall": 0.07407407407407407,
+      "inf_thresholds": 590
+     },
+     "C4_weighted": {
+      "alpha": 0.05,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 201,
+      "far": 0.32576985413290116,
+      "detected": 24,
+      "recall": 0.8888888888888888,
+      "inf_thresholds": 0
+     },
+     "C4f_weighted_fallback": {
+      "alpha": 0.05,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 201,
+      "far": 0.32576985413290116,
+      "detected": 24,
+      "recall": 0.8888888888888888,
+      "inf_thresholds": 0,
+      "fallback_share": 0.0
+     },
+     "C5_ibm_w1acas": {
+      "alpha": 0.05,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 34,
+      "far": 0.055105348460291734,
+      "detected": 20,
+      "recall": 0.7407407407407407,
+      "inf_thresholds": 0
+     }
+    },
+    "0.1": {
+     "C0_static": {
+      "alpha": 0.1,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 227,
+      "far": 0.3679092382495948,
+      "detected": 25,
+      "recall": 0.9259259259259259,
+      "inf_thresholds": 0
+     },
+     "C1_split": {
+      "alpha": 0.1,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 224,
+      "far": 0.36304700162074555,
+      "detected": 25,
+      "recall": 0.9259259259259259,
+      "inf_thresholds": 0
+     },
+     "C2_mondrian": {
+      "alpha": 0.1,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 163,
+      "far": 0.26418152350081037,
+      "detected": 20,
+      "recall": 0.7407407407407407,
+      "inf_thresholds": 118
+     },
+     "C4_weighted": {
+      "alpha": 0.1,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 224,
+      "far": 0.36304700162074555,
+      "detected": 25,
+      "recall": 0.9259259259259259,
+      "inf_thresholds": 0
+     },
+     "C4f_weighted_fallback": {
+      "alpha": 0.1,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 224,
+      "far": 0.36304700162074555,
+      "detected": 25,
+      "recall": 0.9259259259259259,
+      "inf_thresholds": 0,
+      "fallback_share": 0.0
+     },
+     "C5_ibm_w1acas": {
+      "alpha": 0.1,
+      "n_good": 617,
+      "n_bad": 27,
+      "false_alarms": 58,
+      "far": 0.0940032414910859,
+      "detected": 24,
+      "recall": 0.8888888888888888,
+      "inf_thresholds": 0
+     }
+    }
+   },
+   "scorer_info": {},
+   "n_cal": 203,
+   "seconds": 3.6
+  },
+  {
+   "fold": "lomo_M03",
+   "aggregation": "max",
+   "val_pr_auc_by_rule": {
+    "max": 1.0,
+    "mean": 1.0,
+    "top10": 1.0
+   },
+   "bandwidth": {
+    "factor": 2.0,
+    "median_dist": 5.688008315643089,
+    "pseudo_shift_errors": {
+     "0.25": 0.05,
+     "0.5": 0.05,
+     "1.0": 0.023419203747072598,
+     "2.0": 0.019320843091334892,
+     "4.0": 0.019320843091334892
+    }
+   },
+   "threshold_free": {
+    "pr_auc": 0.6845313615433282,
+    "roc_auc": 0.8484276729559749,
+    "prevalence": 0.016697588126159554
+   },
+   "by_alpha": {
+    "0.01": {
+     "C0_static": {
+      "alpha": 0.01,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 11,
+      "far": 0.020754716981132074,
+      "detected": 6,
+      "recall": 0.6666666666666666,
+      "inf_thresholds": 0
+     },
+     "C1_split": {
+      "alpha": 0.01,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 23,
+      "far": 0.04339622641509434,
+      "detected": 6,
+      "recall": 0.6666666666666666,
+      "inf_thresholds": 0
+     },
+     "C2_mondrian": {
+      "alpha": 0.01,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 0,
+      "recall": 0.0,
+      "inf_thresholds": 539
+     },
+     "C4_weighted": {
+      "alpha": 0.01,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 19,
+      "far": 0.035849056603773584,
+      "detected": 6,
+      "recall": 0.6666666666666666,
+      "inf_thresholds": 0
+     },
+     "C4f_weighted_fallback": {
+      "alpha": 0.01,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 19,
+      "far": 0.035849056603773584,
+      "detected": 6,
+      "recall": 0.6666666666666666,
+      "inf_thresholds": 0,
+      "fallback_share": 0.0
+     },
+     "C5_ibm_w1acas": {
+      "alpha": 0.01,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 6,
+      "far": 0.011320754716981131,
+      "detected": 5,
+      "recall": 0.5555555555555556,
+      "inf_thresholds": 0
+     }
+    },
+    "0.02": {
+     "C0_static": {
+      "alpha": 0.02,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 52,
+      "far": 0.09811320754716982,
+      "detected": 6,
+      "recall": 0.6666666666666666,
+      "inf_thresholds": 0
+     },
+     "C1_split": {
+      "alpha": 0.02,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 47,
+      "far": 0.08867924528301886,
+      "detected": 6,
+      "recall": 0.6666666666666666,
+      "inf_thresholds": 0
+     },
+     "C2_mondrian": {
+      "alpha": 0.02,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 0,
+      "far": 0.0,
+      "detected": 0,
+      "recall": 0.0,
+      "inf_thresholds": 539
+     },
+     "C4_weighted": {
+      "alpha": 0.02,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 47,
+      "far": 0.08867924528301886,
+      "detected": 6,
+      "recall": 0.6666666666666666,
+      "inf_thresholds": 0
+     },
+     "C4f_weighted_fallback": {
+      "alpha": 0.02,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 47,
+      "far": 0.08867924528301886,
+      "detected": 6,
+      "recall": 0.6666666666666666,
+      "inf_thresholds": 0,
+      "fallback_share": 0.0
+     },
+     "C5_ibm_w1acas": {
+      "alpha": 0.02,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 13,
+      "far": 0.024528301886792454,
+      "detected": 6,
+      "recall": 0.6666666666666666,
+      "inf_thresholds": 0
+     }
+    },
+    "0.05": {
+     "C0_static": {
+      "alpha": 0.05,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 98,
+      "far": 0.18490566037735848,
+      "detected": 7,
+      "recall": 0.7777777777777778,
+      "inf_thresholds": 0
+     },
+     "C1_split": {
+      "alpha": 0.05,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 115,
+      "far": 0.2169811320754717,
+      "detected": 7,
+      "recall": 0.7777777777777778,
+      "inf_thresholds": 0
+     },
+     "C2_mondrian": {
+      "alpha": 0.05,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 1,
+      "far": 0.0018867924528301887,
+      "detected": 4,
+      "recall": 0.4444444444444444,
+      "inf_thresholds": 431
+     },
+     "C4_weighted": {
+      "alpha": 0.05,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 115,
+      "far": 0.2169811320754717,
+      "detected": 7,
+      "recall": 0.7777777777777778,
+      "inf_thresholds": 0
+     },
+     "C4f_weighted_fallback": {
+      "alpha": 0.05,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 115,
+      "far": 0.2169811320754717,
+      "detected": 7,
+      "recall": 0.7777777777777778,
+      "inf_thresholds": 0,
+      "fallback_share": 0.0
+     },
+     "C5_ibm_w1acas": {
+      "alpha": 0.05,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 34,
+      "far": 0.06415094339622641,
+      "detected": 6,
+      "recall": 0.6666666666666666,
+      "inf_thresholds": 0
+     }
+    },
+    "0.1": {
+     "C0_static": {
+      "alpha": 0.1,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 143,
+      "far": 0.269811320754717,
+      "detected": 7,
+      "recall": 0.7777777777777778,
+      "inf_thresholds": 0
+     },
+     "C1_split": {
+      "alpha": 0.1,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 157,
+      "far": 0.2962264150943396,
+      "detected": 7,
+      "recall": 0.7777777777777778,
+      "inf_thresholds": 0
+     },
+     "C2_mondrian": {
+      "alpha": 0.1,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 132,
+      "far": 0.2490566037735849,
+      "detected": 7,
+      "recall": 0.7777777777777778,
+      "inf_thresholds": 0
+     },
+     "C4_weighted": {
+      "alpha": 0.1,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 156,
+      "far": 0.2943396226415094,
+      "detected": 7,
+      "recall": 0.7777777777777778,
+      "inf_thresholds": 0
+     },
+     "C4f_weighted_fallback": {
+      "alpha": 0.1,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 156,
+      "far": 0.2943396226415094,
+      "detected": 7,
+      "recall": 0.7777777777777778,
+      "inf_thresholds": 0,
+      "fallback_share": 0.0
+     },
+     "C5_ibm_w1acas": {
+      "alpha": 0.1,
+      "n_good": 530,
+      "n_bad": 9,
+      "false_alarms": 72,
+      "far": 0.13584905660377358,
+      "detected": 7,
+      "recall": 0.7777777777777778,
+      "inf_thresholds": 0
+     }
+    }
+   },
+   "scorer_info": {},
+   "n_cal": 223,
+   "seconds": 3.8
+  }
+ ],
+ "provenance": {
+  "git_commit": "09c88a1",
+  "data_checksum": "1581645e75c9f3f8cb7cb56432f9e891bc51ec5e71ec3964ee697f266ece6bbe",
+  "seed": 0,
+  "created_utc": "2026-11-20T15:01:56Z"
+ }
+}

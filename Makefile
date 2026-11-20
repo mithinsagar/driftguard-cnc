@@ -14,7 +14,8 @@ data:             ## download (verified against git blob SHA-1), audit, feature 
 	$(PY) scripts/prepare.py
 
 eval:             ## all scorers x calibration strategies x protocols
-	for s in $(SEEDS); do $(PY) scripts/run_eval.py --proto lopo lomo time --scorers B0 B1 B2 AE --seed $$s; done
+	for s in $(SEEDS); do $(PY) scripts/run_eval.py --proto lopo lomo time --scorers B0 B1 B2 --seed $$s; done
+	for s in $(SEEDS); do $(PY) scripts/run_eval.py --proto lopo lomo time --scorers AE --seed $$s; done
 
 stream:           ## streaming contamination study (claim C2)
 	$(PY) scripts/run_stream.py --proto lomo --scorer B1 --alpha 0.05

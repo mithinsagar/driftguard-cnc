@@ -6,6 +6,8 @@ Held-out recordings are replayed in chronological order. Operator labels arrive 
                (a widely used self-training rule; it truncates the buffer and drags the threshold down)
   P2_delayed   a file is admitted only after its label arrives and confirms it is healthy
   P3_aci       frozen buffer; the working alpha is updated by ACI from delayed false-alarm feedback
+  P5_delayed_aci  delayed-label admission (P2) AND an ACI correction of the working alpha from the same delayed labels:
+               the buffer adapts the threshold to the new regime, ACI keeps the achieved false-alarm rate on target
 Scenarios: "natural" order, and "burst", where the fold's real anomalous files are moved into one contiguous block
 starting one third into the stream (no data is synthesised, only the order changes).
 """
@@ -31,7 +33,7 @@ def order_stream(t_order: np.ndarray, index: np.ndarray, is_bad: np.ndarray, sce
 
 
 def simulate(scores: np.ndarray, is_bad: np.ndarray, cal_scores: np.ndarray, alpha: float, policy: str,
-             delay: int = 20, gamma: float = 0.01, buffer_size: int = 300) -> dict:
+             delay: int = 20, gamma: float = 0.01, buffer_size: int = 300, label_rate: float = 1.0, seed: int = 0) -> dict:
     """Replay `scores` (already in stream order). Returns per-step thresholds and flags plus summary metrics."""
     n = len(scores)
     if policy == "P4_w1acas":
@@ -50,9 +52,12 @@ def simulate(scores: np.ndarray, is_bad: np.ndarray, cal_scores: np.ndarray, alp
     buf = RollingBuffer(cal_scores, size=buffer_size)
     aci = ACI(np.asarray(cal_scores, float), alpha, gamma=gamma)
     pending: deque = deque()
+    labelled = np.random.default_rng(seed).random(n) < label_rate  # which files ever receive an operator label
     for t in range(n):
         if policy == "P3_aci":
             q = aci.threshold()
+        elif policy == "P5_delayed_aci":
+            q = buf.threshold(float(np.clip(aci.alpha_t, 1e-4, 0.5)))
         elif policy == "P0_frozen":
             q = split_conformal_threshold(cal_scores, alpha)
         else:
@@ -64,9 +69,11 @@ def simulate(scores: np.ndarray, is_bad: np.ndarray, cal_scores: np.ndarray, alp
         pending.append(t)
         while pending and pending[0] <= t - delay:
             j = pending.popleft()
-            if policy == "P2_delayed" and not is_bad[j]:
+            if not labelled[j]:
+                continue
+            if policy in ("P2_delayed", "P5_delayed_aci") and not is_bad[j]:
                 buf.admit(scores[j])
-            if policy == "P3_aci" and not is_bad[j]:
+            if policy in ("P3_aci", "P5_delayed_aci") and not is_bad[j]:
                 aci.feedback(flagged_normal=bool(flags[j]))
     good = ~is_bad
     third = n // 3

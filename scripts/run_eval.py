@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import subprocess
 import sys
@@ -21,15 +22,12 @@ from driftguard.data import splits  # noqa: E402
 from driftguard.data.dataset import load_signal  # noqa: E402
 from driftguard.eval import engine  # noqa: E402
 from driftguard.features.dsp import windows  # noqa: E402
-from driftguard.models.autoencoder import AEScorer  # noqa: E402
 from driftguard.models.scorers import IForestScorer, RMSScorer, XGBScorer, aggregate  # noqa: E402
 
 RES = Path("results")
-try:
-    import tsfm_public  # noqa: F401  (IBM granite-tsfm, baseline C5)
-    USE_W1ACAS = True
-except ImportError:
-    USE_W1ACAS = False
+AE_EPOCHS = 8
+# IBM granite-tsfm provides baseline C5; it runs in a spawned worker (see calibration/ibm_w1acas.py).
+USE_W1ACAS = importlib.util.find_spec("tsfm_public") is not None
 _SIG: dict[int, np.ndarray] = {}
 
 
@@ -47,6 +45,8 @@ def signal(df: pd.DataFrame, row: int) -> np.ndarray:
 
 
 def ae_window_scores(df, fd, file_idx, seed, log) -> tuple[np.ndarray, dict]:
+    from driftguard.models.autoencoder import AEScorer
+
     rng = np.random.default_rng(seed)
 
     def sample(rows, per_file):
@@ -60,8 +60,14 @@ def ae_window_scores(df, fd, file_idx, seed, log) -> tuple[np.ndarray, dict]:
     tr = sample(fd.idx["train_good"], 24)
     va = sample(fd.idx["val_good"], 6)
     t0 = time.time()
-    model = AEScorer(seed=seed).fit(tr, va, log=log)
+    model = AEScorer(seed=seed, epochs=AE_EPOCHS).fit(tr, va, log=log)
     fit_s = time.time() - t0
+    if fd.proto == "time":  # the deployment model: export_edge.py quantizes exactly this network
+        import torch
+
+        Path("artifacts").mkdir(exist_ok=True)
+        torch.save({"state_dict": {k: v.cpu() for k, v in model.model.state_dict().items()}, "mu": model.mu, "sd": model.sd,
+                    "seed": seed, "fold": fd.name, "epochs": AE_EPOCHS}, "artifacts/ae_time_fold.pt")
     scores = np.empty(len(file_idx), dtype=float)
     for r in range(len(df)):
         sel = np.flatnonzero(file_idx == r)
@@ -133,6 +139,12 @@ if __name__ == "__main__":
     ap.add_argument("--scorers", nargs="+", default=["B0", "B1", "B2", "AE"])
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--quick", action="store_true")
+    ap.add_argument("--ae-epochs", type=int, default=8)
     a = ap.parse_args()
+    if "B2" in a.scorers and "AE" in a.scorers:
+        raise SystemExit("Run B2 (XGBoost) and AE (PyTorch) in separate invocations: their OpenMP runtimes crash together on macOS.")
+    if "B2" in a.scorers:
+        import xgboost  # noqa: F401
+    AE_EPOCHS = a.ae_epochs
     run(a.proto, a.scorers, a.seed, a.quick)
     _ = hashlib  # provenance helpers keep hashlib available for future checksum fields

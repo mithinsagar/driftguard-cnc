@@ -10,11 +10,27 @@ from the healthy calibration recordings. An alarm is raised when the returned p-
 from __future__ import annotations
 
 import math
+import multiprocessing as mp
+import os
+from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
 
+_EXECUTOR: ProcessPoolExecutor | None = None
 
-def w1acas_pvalues(cal_scores: np.ndarray, stream_scores: np.ndarray, alpha: float, n_epochs: int = 1, n_batch_update: int = 10,
+
+def w1acas_pvalues(cal_scores, stream_scores, alpha, **kw) -> np.ndarray:
+    """Run W1-ACAS in a dedicated spawned worker so its PyTorch/OpenMP runtime never shares a process with XGBoost.
+    Set DRIFTGUARD_W1ACAS_INPROC=1 to run in-process (tests)."""
+    global _EXECUTOR
+    if os.environ.get("DRIFTGUARD_W1ACAS_INPROC") == "1":
+        return _w1acas_pvalues_local(cal_scores, stream_scores, alpha, **kw)
+    if _EXECUTOR is None:
+        _EXECUTOR = ProcessPoolExecutor(max_workers=1, mp_context=mp.get_context("spawn"))
+    return _EXECUTOR.submit(_w1acas_pvalues_local, np.asarray(cal_scores, float), np.asarray(stream_scores, float), alpha, **kw).result()
+
+
+def _w1acas_pvalues_local(cal_scores: np.ndarray, stream_scores: np.ndarray, alpha: float, n_epochs: int = 1, n_batch_update: int = 10,
                    lr: float = 1e-3, prior_past_weights_value="proximity") -> np.ndarray:
     try:
         from tsfm_public.toolkit.conformal import AdaptiveWeightedConformalScoreWrapper

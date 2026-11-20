@@ -107,9 +107,17 @@ def thresholds_for_test(file_scores, emb, df, fd: FoldData, alpha: float, bandwi
     pooled = out["C1_split"][0]
     mt = mondrian_thresholds(file_scores[cal], df["process"].to_numpy()[cal], alpha)
     out["C2_mondrian"] = np.array([mt.get(p, pooled) for p in df["process"].to_numpy()[test]])
-    out["C4_weighted"] = np.array([
-        weighted_conformal_threshold(file_scores[cal], similarity_weights(emb[cal], emb[i], bandwidth), alpha) for i in test
-    ])
+    w_thr, ess = [], []
+    for i in test:
+        w = similarity_weights(emb[cal], emb[i], bandwidth)
+        w_thr.append(weighted_conformal_threshold(file_scores[cal], w, alpha))
+        ess.append(w.sum() ** 2 / max((w**2).sum(), 1e-300))
+    out["C4_weighted"] = np.array(w_thr)
+    # C4f: weighted threshold when the weighted calibration set can support alpha (ESS >= 1/alpha and finite),
+    # otherwise fall back to pooled split conformal and mark the decision low-confidence.
+    ok = (np.array(ess) >= 1.0 / alpha) & np.isfinite(out["C4_weighted"])
+    out["C4f_weighted_fallback"] = np.where(ok, out["C4_weighted"], pooled)
+    out["_fallback_share"] = float(1 - ok.mean())
     return out
 
 
@@ -131,7 +139,7 @@ def evaluate(file_scores, df, fd: FoldData, thr: dict, alpha: float, extra_flags
     y = (df["label"].to_numpy()[test] == "bad").astype(int)
     s = file_scores[test]
     res = {}
-    items = [(k, s > t, t) for k, t in thr.items()] + [(k, f, np.zeros(len(f))) for k, f in (extra_flags or {}).items()]
+    items = [(k, s > t, t) for k, t in thr.items() if not k.startswith("_")] + [(k, f, np.zeros(len(f))) for k, f in (extra_flags or {}).items()]
     for name, flag, t in items:
         n_good, n_bad = int((y == 0).sum()), int(y.sum())
         res[name] = {
@@ -140,6 +148,8 @@ def evaluate(file_scores, df, fd: FoldData, thr: dict, alpha: float, extra_flags
             "detected": int(flag[y == 1].sum()), "recall": float(flag[y == 1].mean()) if n_bad else float("nan"),
             "inf_thresholds": int(np.isinf(t).sum()),
         }
+    if "_fallback_share" in thr:
+        res["C4f_weighted_fallback"]["fallback_share"] = thr["_fallback_share"]
     return res
 
 

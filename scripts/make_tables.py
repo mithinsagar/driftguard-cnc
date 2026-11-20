@@ -16,10 +16,11 @@ from scipy.stats import beta  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from driftguard.eval.engine import ALPHAS  # noqa: E402
 
-STRATS = ["C0_static", "C1_split", "C2_mondrian", "C4_weighted", "C5_ibm_w1acas"]
+STRATS = ["C0_static", "C1_split", "C2_mondrian", "C4_weighted", "C4f_weighted_fallback", "C5_ibm_w1acas"]
 LABEL = {"C0_static": "static percentile", "C1_split": "split conformal", "C2_mondrian": "Mondrian (per process)",
-         "C4_weighted": "similarity-weighted (proposed)", "C5_ibm_w1acas": "IBM W1-ACAS (ICLR 2026)"}
-COLOR = {"C0_static": "#b7793a", "C1_split": "#8a99a8", "C2_mondrian": "#6d5bb0", "C4_weighted": "#2f7d4f", "C5_ibm_w1acas": "#c0392b"}
+         "C4_weighted": "similarity-weighted (raw)", "C4f_weighted_fallback": "similarity-weighted + ESS fallback", "C5_ibm_w1acas": "IBM W1-ACAS (ICLR 2026)"}
+COLOR = {"C0_static": "#b7793a", "C1_split": "#8a99a8", "C2_mondrian": "#6d5bb0", "C4_weighted": "#7fb98f",
+         "C4f_weighted_fallback": "#1b6b3a", "C5_ibm_w1acas": "#c0392b"}
 SCORER_NAME = {"B0": "RMS heuristic", "B1": "Isolation Forest", "B2": "XGBoost (supervised)", "AE": "1D-CNN autoencoder"}
 
 
