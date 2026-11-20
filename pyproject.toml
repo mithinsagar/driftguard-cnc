@@ -9,7 +9,7 @@ license = { text = "MIT" }
 where = ["src"]
 
 [tool.ruff]
-line-length = 120
+line-length = 160
 target-version = "py311"
 
 [tool.ruff.lint]
