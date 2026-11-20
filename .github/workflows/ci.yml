@@ -22,5 +22,5 @@ jobs:
           for i in $(seq 1 30); do curl -sf localhost:8000/v1/health && break; sleep 2; done
           curl -sf localhost:8000/v1/health
           curl -sf localhost:8000/v1/demo/streams | python3 -c "import json,sys; d=json.load(sys.stdin); assert len(d['scenes']) == 3"
-          curl -sf -X POST localhost:8000/v1/score -H 'Content-Type: application/json' \
-            -d "$(python3 -c "import json,random; print(json.dumps({'samples': [[random.gauss(0,1) for _ in range(3)] for _ in range(4000)]}))")"
+          python3 -c "import json,random; json.dump({'samples': [[random.gauss(0,1) for _ in range(3)] for _ in range(4000)]}, open('body.json','w'))"
+          curl -sf -X POST localhost:8000/v1/score -H 'Content-Type: application/json' -d @body.json | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['decision'] in ('NORMAL','ANOMALY'), d"
