@@ -1,5 +1,7 @@
 # DriftGuard-CNC
 
+[![ci](https://github.com/mithinsagar/driftguard-cnc/actions/workflows/ci.yml/badge.svg)](https://github.com/mithinsagar/driftguard-cnc/actions/workflows/ci.yml)
+
 **False-alarm-controlled vibration anomaly detection on Bosch's CNC machining data, tested under the shifts that break real deployments: a new machining process, a new machine, a later time period.**
 
 An engineer chooses a false-alarm budget α ("at most 5 in 100 healthy runs may raise an alarm"). DriftGuard-CNC sets thresholds to meet it, measures honestly whether the promise survives shift, keeps sensor faults separate from process anomalies, and ships an INT8 model that makes the same decisions as the full-precision one.
