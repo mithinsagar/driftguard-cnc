@@ -11,12 +11,12 @@ import matplotlib.pyplot as plt  # noqa: E402
 import pandas as pd  # noqa: E402
 
 SHOW = {"P0_frozen": ("frozen threshold (split conformal)", "#8a99a8"), "P1_naive": ("naive self-labelling", "#e08a1e"),
-        "P4_w1acas": ("IBM W1-ACAS, label-free (ICLR 2026)", "#c0392b"),
-        "P5_delayed_aci_d5": ("delayed-label + ACI (this work)", "#111111")}
+        "P4_w1acas_tuned": ("IBM W1-ACAS, label-free, tuned (ICLR 2026)", "#c0392b"),
+        "P5_tuned_d5": ("delayed-label + ACI, tuned (this project)", "#111111")}
 
 
 def main(proto="lomo", scorer="B2", scen="burst"):
-    g = pd.DataFrame(json.loads(Path(f"results/stream_sweep_{proto}_{scorer}_seed0_{scen}.json").read_text()))
+    g = pd.DataFrame(json.loads(Path(f"results/holdout/{proto}_{scorer}_seed0_{scen}.json").read_text())["eval"])
     fig, (a, b) = plt.subplots(1, 2, figsize=(11, 4.2))
     for pol, (label, color) in SHOW.items():
         s = g[g.policy == pol].sort_values("alpha")
@@ -32,9 +32,10 @@ def main(proto="lomo", scorer="B2", scen="burst"):
     for ax in (a, b):
         ax.grid(alpha=0.25)
     a.legend(fontsize=7.5, loc="upper left")
-    fig.suptitle("Bosch CNC data, leave-one-machine-out, real recordings streamed in time order with a burst of real faulty runs "
-                 "(supervised XGBoost scorer; operator labels arrive 5 runs late)", fontsize=8.5, y=0.995)
-    fig.tight_layout()
+    fig.suptitle("Bosch CNC data, leave-one-machine-out: real recordings in time order with a burst of real faulty runs.\n"
+                 "Settings tuned on the first half of each stream, scored on the second half (supervised XGBoost scorer; labels arrive 5 runs late)",
+                 fontsize=8.5, y=1.0)
+    fig.tight_layout(rect=(0, 0, 1, 0.94))
     fig.savefig("reports/figures/headline.png", dpi=170)
     plt.close(fig)
 

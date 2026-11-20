@@ -7,25 +7,32 @@ An engineer chooses a false-alarm budget α ("at most 5 in 100 healthy runs may 
 <!-- RESULTS:START -->
 ![headline](reports/figures/headline.png)
 
-### Key results (all generated from `results/`; α = 5% unless stated)
+### Key results (generated from `results/`; α = 5% unless stated)
 
-1. **The most accurate detector is the least trustworthy under shift.** Supervised XGBoost has the best ranking (mean PR-AUC 0.90 on unseen processes), yet a static threshold set for 5% false alarms produced **44.2% false alarms** on the later time period and 18.0% on unseen machines; split conformal gives 47.1% and 19.9%.
-2. **Label-free adaptive calibration fixes the rate but costs recall.** IBM's W1-ACAS (ICLR 2026, run with IBM's code) brings unseen-machine false alarms to 5.5% for the supervised scorer.
-3. **A little late operator feedback buys a lot (this work).** Admitting only operator-confirmed healthy runs to the calibration buffer and correcting the working α with ACI from the same late labels (5-run delay) is the best-calibrated policy in **16 of 16** streaming settings (mean absolute calibration error 0.1% to 0.4%, against 0.4% to 2.7% for W1-ACAS). On real unseen-machine streams with a burst of faulty runs it achieved **5.3% false alarms with 87.1% recall**, versus 4.3% / 70.0% for W1-ACAS. At a matched 2% false-alarm rate, recall was higher in 10 settings (by up to 30 points) and lower in 3. W1-ACAS needs no labels; this policy needs delayed confirmations, and the label-coverage ablation shows it stays near target with 50% coverage (6.1% achieved) but drifts with 10% (12.0%).
-4. **Naive self-labelling is worse than doing nothing.** Admitting every unflagged run raised unseen-machine false alarms from 19.9% (frozen) to 27.6%, the self-poisoning effect described in prior work, here measured on real factory streams.
-5. **Negative results, reported:** similarity-weighted conformal thresholds did not beat pooled calibration under unseen processes, and adding a few confirmed runs of a new process barely moved static thresholds (see `results/fewshot_*`).
-6. **The edge model makes the same decisions.** After INT8 static quantization and recalibration on INT8 scores, file-level verdicts agreed with FP32 on **99.8%** of held-out recordings (99.6% if FP32 thresholds are reused without recalibration); score correlation 0.9984; p95 latency 1.22 ms per 1 s window on one Apple M5 CPU core (1.20 ms FP32); model 188 KB.
+1. **The most accurate detector is the least trustworthy under shift.** Supervised XGBoost ranks faults best (mean PR-AUC 0.90 on unseen processes, 3 seeds), yet a static threshold set for 5% false alarms produced **42.9% false alarms** on the later time period and 18.3% on unseen machines.
+2. **Label-free adaptive calibration fixes the rate.** IBM's W1-ACAS (ICLR 2026, run with IBM's code) brings those to 5.5% and 5.9%.
+3. **Late operator feedback calibrates better (main result, held-out protocol).** Every tunable policy had its settings chosen on the first half of each real stream and was scored on the second half only. Admitting only operator-confirmed healthy runs to the calibration buffer and correcting the working α with ACI from the same late labels was better calibrated than IBM W1-ACAS in **32 of 40** held-out runs (16 settings, up to 3 training seeds each) against tuned W1-ACAS and 31 of 40 against its default settings. Recall at a matched 2% false-alarm rate was higher in 16 and lower in 13 of 31 comparable runs against tuned W1-ACAS (mean +9.0 points); against default W1-ACAS it was higher in 15 and lower in 13 (mean +2.1). Example, unseen machines with a burst of real faulty runs: **4.3% false alarms, 65.7% recall**, against 4.6% / 25.7% for tuned W1-ACAS and 26.9% false alarms for a frozen threshold. W1-ACAS needs no labels; this policy does, and it stays near target with 50% label coverage (6.1%) but drifts with 10% (12.0%).
+4. **Naive self-labelling is worse than doing nothing.** Admitting every unflagged run raised unseen-machine false alarms from 19.9% (frozen) to 27.6%, the self-poisoning effect described in prior work, measured here on real factory streams.
+5. **The edge model makes the same decisions and can warn early.** INT8 decisions agreed with FP32 on **99.8%** of 469 held-out recordings after recalibration (99.6% without); p95 latency 1.22 ms per 1 s window on one Apple M5 CPU core (FP32 1.20 ms); 188 KB. Alarming at the first crossing of the running score caught 10 of 17 faulty 2021 runs at a median of 1.0 s into the run, with 5.3% false alarms on healthy runs (end-of-run decisions: 7 of 17 at 3.1%).
+6. **Negative results, reported:** similarity-weighted conformal thresholds did not beat pooled calibration under unseen processes, and adding a few confirmed runs of a new process barely moved static thresholds.
 
-Full tables: [docs/results_tables.md](docs/results_tables.md) (offline calibration, all scorers and protocols) and [docs/stream_tables.md](docs/stream_tables.md) (streaming study). Figures: [reports/figures/](reports/figures/).
+Secondary analysis without held-out tuning (whole streams, fixed settings): the same policy reached 5.3% false alarms with 87.1% recall in the example above; those numbers are more optimistic because the policy was designed on the same streams.
+
+Tables: [held-out streaming](docs/holdout_tables.md), [offline calibration, all scorers and seeds](docs/results_tables.md), [whole-stream analysis](docs/stream_tables.md). Report: [docs/report.pdf](docs/report.pdf). Figures: [reports/figures/](reports/figures/).
 <!-- RESULTS:END -->
 
 ## Demo
 
+![streaming replay](reports/figures/stream_replay.gif)
+
+`make demo` starts the FastAPI service and dashboard on http://localhost:8000. Two tabs:
+
+- **Streaming replay** (above): real recordings from a machine or year the scorer never saw, in time order, through four policies at α = 5%. On unseen machine M02 the frozen threshold climbs past 50% false alarms over the last 50 healthy runs, W1-ACAS recovers after a spike, and the delayed-label policy holds the budget while catching more of the faulty runs.
+- **Live decisions**: score any held-out 2021 recording with the INT8 model, then press *Operator: healthy* or *Operator: faulty*. Confirmed healthy runs update the adaptive threshold through the same delayed-label + ACI calibrator used in the study (a unit test checks the service makes exactly the study's decisions); faulty confirmations never enter the calibration set. Injecting a sensor fault returns `SENSOR_FAULT`, never a process verdict.
+
 ![dashboard](reports/figures/dashboard.jpg)
 
-`make demo` starts the FastAPI service and the replay dashboard on http://localhost:8000. Pick any held-out recording from the chronological test fold, move the false-alarm budget α, and inject a sensor fault: a disconnected axis returns `SENSOR_FAULT`, never a process verdict. The screenshot shows a real anomalous run (M01, OP07, August 2021) scored by the INT8 model at 2.71 against a conformal threshold of 0.84, p-value 0.0043 (the smallest the 234-recording calibration set can produce). The deployed autoencoder also misses faulty runs, and the dashboard shows ground truth next to every decision.
-
-API: `POST /v1/score` (n x 3 samples at 2 kHz) returns decision, file score, threshold, conformal p-value, window scores and latency; `PUT /v1/config` changes α and rejects values below what the calibration set can support; the service refuses to start if the calibration file was computed for a different model hash.
+API: `POST /v1/score` (n x 3 samples at 2 kHz) returns decision, run id, file score, adaptive and fixed thresholds, working α, p-value and latency; `POST /v1/feedback` applies a late operator confirmation; `PUT /v1/config` sets α and rejects values below what the calibration set can support; `GET /v1/demo/streams` serves the replay scenes. The service refuses to start if the calibration file was computed for a different model hash.
 
 ## Validate it yourself (about 15 minutes on a laptop)
 
@@ -57,7 +64,7 @@ make test                   # leakage, DSP, conformal maths, streaming policies,
 | Calibration | C0 static percentile, C1 split conformal, C2 Mondrian per process, C4 similarity-weighted conformal (kernel width chosen by a nested pseudo-shift on validation data), C5 IBM W1-ACAS (their implementation) |
 | Streaming calibration | Held-out recordings replayed in time order (natural, and with a contiguous burst of the real faulty runs); operator labels arrive k runs late. Policies: frozen, naive self-labelling, delayed-label admission, ACI from delayed errors, IBM W1-ACAS (label-free), and delayed-label admission + ACI (this work); swept over α to compare recall at matched false-alarm rate; label-coverage ablation |
 | Edge | ONNX FP32 and static INT8 (QDQ, per-channel), recalibrated on INT8 scores; single-core latency |
-| Serving | FastAPI service with SHA-256 binding between model and calibration, plus a replay dashboard |
+| Serving | FastAPI service whose decisions use the delayed-label + ACI calibrator online, operator feedback endpoint, SHA-256 binding between model and calibration, dashboard with live decisions and streaming replay |
 
 ## Evaluation protocols
 
@@ -76,22 +83,26 @@ See [docs/related_work.md](docs/related_work.md). In short: conformal anomaly de
 ## Reproduce
 
 ```bash
-make setup      # Python 3.12 venv with pinned dependencies
+make setup      # Python 3.12 venv with pinned dependencies (+ IBM granite-tsfm for the W1-ACAS baseline)
 make data       # download + verify (about 0.9 GB), audit, features, splits
-make eval       # all scorers x calibration strategies x protocols
-make stream     # streaming label-delay study
-make export     # ONNX FP32 + INT8, parity and latency
-make tables     # results/summary.json, docs/results_tables.md, figures
-make verify     # fast re-run compared with committed results
+make eval       # all scorers x calibration strategies x protocols (SEEDS="0 1 2" for three seeds)
+make stream     # whole-stream study, label-coverage ablation, few-shot study
+make holdout    # held-out streaming protocol: tune on first halves, score on second halves
+make export     # ONNX FP32 + INT8, parity, latency, detection latency, dashboard replay scenes
+make tables     # every table, figure, README result and the PDF report, regenerated from results/
+make verify     # fast re-run compared with committed results (exact match expected)
 make test
 make demo       # http://localhost:8000
 ```
 
 ## Limitations
 
-- Latency is measured on an Apple M5 CPU core, not on an industrial PC.
+- 70 anomalous recordings (17 in the 2021 test period) limit statistical power; streaming results pool three machine folds and one time fold.
+- Operator labels are simulated as correct and delayed by a fixed number of runs; real feedback is noisier.
+- W1-ACAS was designed for foundation-model forecast residuals; here it calibrates recording-level scores from our scorers, with its own settings tuned on the same first halves as ours.
+- Latency is measured on an Apple M5 CPU core, not on an industrial PC; INT8 is not faster than FP32 on this CPU.
 - Labels are per recording; per-window anomaly labels do not exist and are never invented.
-- Similarity-weighted calibration gives approximate, not guaranteed, false-alarm control under shift.
+- The deployed autoencoder ranks anomalies worse than a simple RMS rule on this data; it is deployed because it is unsupervised and small, and the calibration layer is model-agnostic.
 
 ## Licence
 

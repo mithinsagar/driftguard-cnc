@@ -1,0 +1,34 @@
+{
+ "P4_w1acas_default": {
+  "settings": 40,
+  "calibration_better": 31,
+  "recall_at_far_2pct": {
+   "comparable": 33,
+   "better": 15,
+   "worse": 13,
+   "mean_diff_points": 2.081073532565765
+  },
+  "recall_at_far_5pct": {
+   "comparable": 40,
+   "better": 18,
+   "worse": 15,
+   "mean_diff_points": 0.32895690772975605
+  }
+ },
+ "P4_w1acas_tuned": {
+  "settings": 40,
+  "calibration_better": 32,
+  "recall_at_far_2pct": {
+   "comparable": 31,
+   "better": 16,
+   "worse": 13,
+   "mean_diff_points": 8.976731149937981
+  },
+  "recall_at_far_5pct": {
+   "comparable": 40,
+   "better": 24,
+   "worse": 14,
+   "mean_diff_points": 7.280647262817845
+  }
+ }
+}

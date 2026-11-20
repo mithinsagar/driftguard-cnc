@@ -20,7 +20,8 @@ import numpy as np
 from driftguard.calibration.conformal import ACI, RollingBuffer, split_conformal_threshold
 
 
-def order_stream(t_order: np.ndarray, index: np.ndarray, is_bad: np.ndarray, scenario: str, seed: int = 0) -> np.ndarray:
+def order_stream(t_order: np.ndarray, index: np.ndarray, is_bad: np.ndarray, scenario: str, seed: int = 0,
+                 burst_at: float = 1 / 3) -> np.ndarray:
     base = np.lexsort((index, t_order))
     if scenario == "natural":
         return base
@@ -28,18 +29,19 @@ def order_stream(t_order: np.ndarray, index: np.ndarray, is_bad: np.ndarray, sce
         raise ValueError(scenario)
     good = base[~is_bad[base]]
     bad = base[is_bad[base]]
-    cut = len(good) // 3
+    cut = int(len(good) * burst_at)
     return np.concatenate([good[:cut], bad, good[cut:]])
 
 
 def simulate(scores: np.ndarray, is_bad: np.ndarray, cal_scores: np.ndarray, alpha: float, policy: str,
-             delay: int = 20, gamma: float = 0.01, buffer_size: int = 300, label_rate: float = 1.0, seed: int = 0) -> dict:
+             delay: int = 20, gamma: float = 0.01, buffer_size: int = 300, label_rate: float = 1.0, seed: int = 0,
+             w1_kw: dict | None = None) -> dict:
     """Replay `scores` (already in stream order). Returns per-step thresholds and flags plus summary metrics."""
     n = len(scores)
     if policy == "P4_w1acas":
         from driftguard.calibration.ibm_w1acas import w1acas_pvalues
 
-        pv = w1acas_pvalues(cal_scores, scores, alpha)
+        pv = w1acas_pvalues(cal_scores, scores, alpha, **(w1_kw or {}))
         flags = pv < alpha
         good, late = ~is_bad, np.arange(n) >= n // 3
         return {"thresholds": np.full(n, np.nan), "flags": flags, "pvalues": pv,

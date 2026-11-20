@@ -5,20 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DriftGuard-CNC</title>
 <style>
-  :root { --bg:#0f1720; --panel:#16212d; --line:#253446; --ink:#e6edf3; --muted:#8aa0b4; --ok:#3fb68b; --bad:#e5534b; --warn:#d9a03f; --blue:#58a6ff; }
+  :root { --bg:#0f1720; --panel:#16212d; --line:#253446; --ink:#e6edf3; --muted:#8aa0b4; --ok:#3fb68b; --bad:#e5534b; --warn:#d9a03f; --blue:#58a6ff; --ibm:#ef6f6c; --naive:#e08a1e; }
   * { box-sizing: border-box; }
   body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 -apple-system, "Helvetica Neue", Arial, sans-serif; }
-  header { display:flex; align-items:baseline; gap:16px; padding:16px 22px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  header { display:flex; align-items:baseline; gap:16px; padding:14px 22px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
   header h1 { font-size:18px; margin:0; letter-spacing:.3px; }
   header .meta { color:var(--muted); font-size:12px; }
-  main { display:grid; grid-template-columns: 300px 1fr; gap:16px; padding:16px 22px; }
+  nav { display:flex; gap:6px; padding:10px 22px 0; }
+  nav button { background:none; border:1px solid var(--line); color:var(--muted); border-radius:7px 7px 0 0; padding:8px 14px; cursor:pointer; font:inherit; }
+  nav button.on { color:var(--ink); background:var(--panel); border-bottom-color:var(--panel); }
+  main { display:grid; grid-template-columns: 310px 1fr; gap:16px; padding:16px 22px; align-items:start; }
   @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  .hidden { display:none !important; }
   .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
   .card h2 { font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin:0 0 10px; }
   label { display:block; color:var(--muted); font-size:12px; margin:12px 0 4px; }
   select, button, input[type=range] { width:100%; }
   select, button { background:#0d141c; color:var(--ink); border:1px solid var(--line); border-radius:7px; padding:8px; font:inherit; }
-  button.primary { background:var(--blue); color:#06111d; border:none; font-weight:700; cursor:pointer; margin-top:14px; }
+  button { cursor:pointer; }
+  button.primary { background:var(--blue); color:#06111d; border:none; font-weight:700; margin-top:14px; }
+  .row { display:flex; gap:8px; margin-top:8px; }
+  .row button { flex:1; }
+  button.ok { border-color:var(--ok); color:var(--ok); }
+  button.no { border-color:var(--bad); color:var(--bad); }
+  button:disabled { opacity:.35; cursor:default; }
   .alpha { display:flex; justify-content:space-between; font-variant-numeric:tabular-nums; }
   .badge { font-size:22px; font-weight:800; letter-spacing:1px; padding:10px 14px; border-radius:8px; text-align:center; margin-top:6px; }
   .NORMAL { background:rgba(63,182,139,.15); color:var(--ok); border:1px solid var(--ok); }
@@ -28,32 +38,48 @@
   .kv { display:grid; grid-template-columns: 1fr auto; gap:4px 10px; font-size:13px; margin-top:12px; font-variant-numeric:tabular-nums; }
   .kv div:nth-child(odd) { color:var(--muted); }
   canvas { width:100%; height:180px; display:block; }
+  canvas.tall { height:260px; }
   .legend { display:flex; gap:16px; font-size:12px; color:var(--muted); margin-top:6px; flex-wrap:wrap; }
   .sw { display:inline-block; width:18px; height:3px; vertical-align:middle; margin-right:5px; }
   .stack { display:grid; gap:16px; }
   .note { color:var(--muted); font-size:12px; margin-top:10px; }
+  table.score { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; font-size:13px; }
+  table.score th, table.score td { text-align:right; padding:6px 8px; border-bottom:1px solid var(--line); }
+  table.score th:first-child, table.score td:first-child { text-align:left; }
 </style>
 </head>
 <body>
 <header>
   <h1>DriftGuard-CNC</h1>
-  <span class="meta" id="meta">loading…</span>
+  <span class="meta" id="meta">loading</span>
 </header>
-<main>
+<nav>
+  <button id="tabLive" class="on">Live decisions</button>
+  <button id="tabStream">Streaming replay</button>
+</nav>
+
+<main id="live">
   <section class="card">
-    <h2>Replay a held-out recording</h2>
-    <label for="file">Recording (chronological test fold)</label>
+    <h2>Score a held-out recording</h2>
+    <label for="file">Recording (chronological test fold, 2021)</label>
     <select id="file"></select>
     <label for="alpha">False-alarm budget α</label>
     <input id="alpha" type="range" min="0.01" max="0.20" step="0.005" value="0.05">
     <div class="alpha"><span id="alphaVal">0.050</span><span id="minAlpha"></span></div>
     <label for="fault">Sensor fault injection</label>
     <select id="fault"><option value="">none</option><option value="flatline">flatline (disconnected axis)</option><option value="invalid">invalid sample (NaN)</option></select>
-    <button class="primary" id="go">Replay</button>
+    <button class="primary" id="go">Score recording</button>
     <h2 style="margin-top:20px">Decision</h2>
     <div id="badge" class="badge IDLE">IDLE</div>
+    <div class="row">
+      <button class="ok" id="confirmOk" disabled>Operator: healthy</button>
+      <button class="no" id="confirmBad" disabled>Operator: faulty</button>
+    </div>
     <div class="kv" id="kv"></div>
-    <p class="note">Thresholds are computed from healthy calibration recordings. The conformal threshold promises a false-alarm rate of at most α when new healthy recordings resemble the calibration set; the research question is how well that holds under process, machine and time shift.</p>
+    <h2 style="margin-top:18px">Adaptive calibrator</h2>
+    <div class="kv" id="cal"></div>
+    <button id="resetCal" style="margin-top:10px">Reset calibrator</button>
+    <p class="note">The decision threshold adapts only from runs an operator confirms as healthy, and an ACI correction keeps the achieved false-alarm rate near α. Faulty confirmations never enter the calibration set.</p>
   </section>
   <div class="stack">
     <section class="card"><h2>Z-axis vibration</h2><canvas id="wave"></canvas></section>
@@ -61,15 +87,41 @@
       <div class="legend">
         <span><i class="sw" style="background:#58a6ff"></i>window score</span>
         <span><i class="sw" style="background:#e6edf3"></i>running file score</span>
-        <span><i class="sw" style="background:#3fb68b"></i>conformal threshold</span>
+        <span><i class="sw" style="background:#3fb68b"></i>adaptive threshold (decision)</span>
+        <span><i class="sw" style="background:#8aa0b4"></i>fixed conformal threshold</span>
         <span><i class="sw" style="background:#d9a03f"></i>static percentile threshold</span>
       </div>
     </section>
   </div>
 </main>
+
+<main id="stream" class="hidden">
+  <section class="card">
+    <h2>Replay a real held-out stream</h2>
+    <label for="scene">Scenario</label>
+    <select id="scene"></select>
+    <button class="primary" id="play">Play stream</button>
+    <p class="note">Real recordings from a machine or year the scorer never saw, in time order. Operator labels arrive 5 runs late. Target false-alarm rate α = 5%. Scores were produced by the scorer trained without that machine or year.</p>
+    <table class="score" id="tally"></table>
+  </section>
+  <div class="stack">
+    <section class="card"><h2>False-alarm rate over the last 50 healthy runs</h2><canvas id="far" class="tall"></canvas>
+      <div class="legend">
+        <span><i class="sw" style="background:#8aa0b4"></i>frozen threshold</span>
+        <span><i class="sw" style="background:#e08a1e"></i>naive self-labelling</span>
+        <span><i class="sw" style="background:#ef6f6c"></i>IBM W1-ACAS (label-free)</span>
+        <span><i class="sw" style="background:#3fb68b"></i>delayed-label + ACI (this project)</span>
+        <span><i class="sw" style="background:#e6edf3"></i>target α</span>
+        <span><i class="sw" style="background:#e5534b;height:8px;width:3px"></i>faulty run</span>
+      </div>
+    </section>
+  </div>
+</main>
+
 <script>
 const $ = id => document.getElementById(id);
-let cfg = null;
+const POL = { frozen: ["frozen threshold", "#8aa0b4"], naive: ["naive self-labelling", "#e08a1e"], w1acas: ["IBM W1-ACAS", "#ef6f6c"], adaptive: ["delayed-label + ACI", "#3fb68b"] };
+let cfg = null, lastRun = null, demo = null, playing = null;
 
 function setup(c) {
   const dpr = window.devicePixelRatio || 1, r = c.getBoundingClientRect();
@@ -77,20 +129,26 @@ function setup(c) {
   const g = c.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); return [g, r.width, r.height];
 }
 function line(g, xs, ys, color, w = 1.3, dash = []) {
-  g.strokeStyle = color; g.lineWidth = w; g.setLineDash(dash); g.beginPath();
-  xs.forEach((x, i) => i ? g.lineTo(x, ys[i]) : g.moveTo(x, ys[i])); g.stroke(); g.setLineDash([]);
+  g.strokeStyle = color; g.lineWidth = w; g.setLineDash(dash); g.beginPath(); let started = false;
+  xs.forEach((x, i) => { if (ys[i] == null || isNaN(ys[i])) { started = false; return; } started ? g.lineTo(x, ys[i]) : g.moveTo(x, ys[i]); started = true; });
+  g.stroke(); g.setLineDash([]);
 }
+function kv(id, obj) { $(id).innerHTML = Object.entries(obj).map(([k, v]) => `<div>${k}</div><div>${v}</div>`).join(""); }
+const pct = x => (x == null || isNaN(x)) ? "n/a" : (100 * x).toFixed(1) + "%";
+
+/* live tab */
 function drawWave(z) {
   const [g, W, H] = setup($("wave")); g.clearRect(0, 0, W, H);
   const lo = Math.min(...z), hi = Math.max(...z), sy = v => H - 8 - (v - lo) / ((hi - lo) || 1) * (H - 16);
   line(g, z.map((_, i) => i / (z.length - 1) * W), z.map(sy), "#8aa0b4", 1);
 }
-function drawScores(ws, n, thr, sthr) {
+function drawScores(ws, n, thr, fixedThr, sthr) {
   const [g, W, H] = setup($("score")); g.clearRect(0, 0, W, H);
-  const shown = ws.slice(0, n), hi = Math.max(...ws, thr, sthr) * 1.08, sy = v => H - 10 - v / hi * (H - 20);
+  const shown = ws.slice(0, n), hi = Math.max(...ws, thr, fixedThr, sthr, 1e-9) * 1.08, sy = v => H - 10 - v / hi * (H - 20);
   const sx = i => 10 + i / Math.max(1, ws.length - 1) * (W - 20);
-  line(g, [10, W - 10], [sy(thr), sy(thr)], "#3fb68b", 1.6);
-  line(g, [10, W - 10], [sy(sthr), sy(sthr)], "#d9a03f", 1.4, [6, 4]);
+  line(g, [10, W - 10], [sy(fixedThr), sy(fixedThr)], "#8aa0b4", 1.2, [3, 3]);
+  line(g, [10, W - 10], [sy(sthr), sy(sthr)], "#d9a03f", 1.2, [6, 4]);
+  line(g, [10, W - 10], [sy(thr), sy(thr)], "#3fb68b", 2);
   if (!shown.length) return;
   line(g, shown.map((_, i) => sx(i)), shown.map(sy), "#58a6ff", 1.2);
   const agg = (cfg && cfg.aggregation) || "top10";
@@ -99,45 +157,91 @@ function drawScores(ws, n, thr, sthr) {
     const k = Math.max(1, Math.ceil(0.1 * s.length)); return s.slice(0, k).reduce((a, b) => a + b, 0) / k; });
   line(g, run.map((_, i) => sx(i)), run.map(sy), "#e6edf3", 2);
 }
-function kv(obj) { $("kv").innerHTML = Object.entries(obj).map(([k, v]) => `<div>${k}</div><div>${v}</div>`).join(""); }
-
+function showCal(st) {
+  kv("cal", { "working α (ACI)": st.alpha_t.toFixed(4), "adaptive threshold": st.threshold.toFixed(4), "calibration buffer": st.buffer_size,
+              "confirmed healthy": st.confirmed_healthy, "confirmed faulty": st.confirmed_faulty, "awaiting confirmation": st.awaiting_confirmation });
+}
 async function loadConfig() {
   cfg = await (await fetch("/v1/config")).json();
-  $("meta").textContent = `calibration fold ${cfg.fold} · ${cfg.n_cal} healthy calibration recordings · smallest promisable α ${cfg.min_alpha.toFixed(4)}`;
+  $("meta").textContent = `calibration fold ${cfg.fold} · ${cfg.n_cal} healthy calibration recordings · smallest promisable α ${cfg.min_alpha.toFixed(4)} · aggregation ${cfg.aggregation}`;
   $("minAlpha").textContent = `min ${cfg.min_alpha.toFixed(3)}`;
+  showCal(cfg.adaptive);
 }
 async function init() {
   await loadConfig();
   const files = await (await fetch("/v1/replay/files")).json();
   files.sort((a, b) => (a.label > b.label ? 1 : -1));
   $("file").innerHTML = files.map(f => `<option value="${f.file_id}">${f.label.toUpperCase()} · ${f.machine} ${f.process} ${f.timeframe} · ${f.file_id}</option>`).join("");
-  drawScores([], 0, 1, 1);
+  drawScores([], 0, 1, 1, 1);
+  demo = await (await fetch("/v1/demo/streams")).json();
+  $("scene").innerHTML = demo.scenes.map((s, i) => `<option value="${i}">${s.title}</option>`).join("");
+  drawStream(0, 0);
 }
 $("alpha").oninput = e => { $("alphaVal").textContent = Number(e.target.value).toFixed(3); };
 $("alpha").onchange = async e => {
   const r = await fetch("/v1/config", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ alpha: Number(e.target.value) }) });
-  if (!r.ok) { alert((await r.json()).detail); return; }
+  if (!r.ok) { $("badge").textContent = (await r.json()).detail; return; }
   await loadConfig();
 };
+async function confirm(healthy) {
+  if (!lastRun) return;
+  const r = await fetch("/v1/feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ run_id: lastRun, healthy }) });
+  if (r.ok) showCal(await r.json());
+  lastRun = null; $("confirmOk").disabled = $("confirmBad").disabled = true;
+}
+$("confirmOk").onclick = () => confirm(true);
+$("confirmBad").onclick = () => confirm(false);
+$("resetCal").onclick = async () => { showCal(await (await fetch("/v1/reset", { method: "POST" })).json()); };
 $("go").onclick = async () => {
-  $("badge").className = "badge IDLE"; $("badge").textContent = "SCORING…";
+  $("badge").className = "badge IDLE"; $("badge").textContent = "SCORING";
   const q = $("fault").value ? `?fault=${$("fault").value}` : "";
   const d = await (await fetch(`/v1/replay/${encodeURIComponent($("file").value)}${q}`)).json();
   drawWave(d.waveform_z);
   if (d.decision === "SENSOR_FAULT") {
     $("badge").className = "badge SENSOR_FAULT"; $("badge").textContent = "SENSOR FAULT";
-    kv({ fault: d.fault, "faulty windows": d.faulty_windows, "ground truth": d.label, latency: d.latency_ms + " ms" });
-    drawScores([], 0, 1, 1); return;
+    kv("kv", { fault: d.fault, "faulty windows": d.faulty_windows, "ground truth": d.label, latency: d.latency_ms + " ms" });
+    drawScores([], 0, 1, 1, 1); return;
   }
+  lastRun = d.run_id; $("confirmOk").disabled = $("confirmBad").disabled = false;
   let n = 0; const ws = d.window_scores;
-  const step = () => { n = Math.min(ws.length, n + Math.max(1, Math.round(ws.length / 60))); drawScores(ws, n, d.threshold, d.static_threshold);
+  const step = () => { n = Math.min(ws.length, n + Math.max(1, Math.round(ws.length / 60))); drawScores(ws, n, d.threshold, d.fixed_conformal_threshold, d.static_threshold);
     if (n < ws.length) requestAnimationFrame(step); else {
       $("badge").className = "badge " + d.decision; $("badge").textContent = d.decision;
-      kv({ "file score": d.file_score.toFixed(4), "conformal threshold": d.threshold.toFixed(4), "static threshold": d.static_threshold.toFixed(4),
-           "p-value": d.p_value.toFixed(4), α: d.alpha, windows: d.n_windows, "ground truth": d.label.toUpperCase(),
-           "machine / process": `${d.machine} / ${d.process}`, "service latency": d.latency_ms + " ms" }); } };
+      kv("kv", { "file score": d.file_score.toFixed(4), "adaptive threshold": d.threshold.toFixed(4), "fixed conformal threshold": d.fixed_conformal_threshold.toFixed(4),
+                 "static threshold": d.static_threshold.toFixed(4), "p-value (initial calibration)": d.p_value_vs_initial_calibration.toFixed(4), "α / working α": `${d.alpha} / ${d.alpha_t.toFixed(4)}`,
+                 "ground truth": d.label.toUpperCase(), "machine / process": `${d.machine} / ${d.process}`, "service latency": d.latency_ms + " ms" });
+      showCal(d.calibrator); } };
   step();
 };
+
+/* streaming tab */
+function drawStream(si, upto) {
+  const s = demo.scenes[si], n = s.scores.length, [g, W, H] = setup($("far")); g.clearRect(0, 0, W, H);
+  const maxFar = Math.max(0.15, ...Object.values(s.policies).flatMap(p => p.rolling_far.filter(v => v != null))) * 1.05;
+  const sx = i => 30 + i / (n - 1) * (W - 40), sy = v => H - 18 - v / maxFar * (H - 30);
+  g.fillStyle = "#8aa0b4"; g.font = "11px -apple-system, Arial"; [0, 0.05, 0.25, 0.5].filter(v => v <= maxFar).forEach(v => { g.fillText((100 * v) + "%", 2, sy(v) + 4); });
+  s.bad.forEach((b, i) => { if (b && i <= upto) { g.fillStyle = "rgba(229,83,75,0.55)"; g.fillRect(sx(i) - 1, H - 16, 2, 10); } });
+  line(g, [30, W - 10], [sy(s.alpha), sy(s.alpha)], "#e6edf3", 1, [5, 4]);
+  for (const [k, [, color]] of Object.entries(POL)) {
+    const rf = s.policies[k].rolling_far.slice(0, upto + 1);
+    line(g, rf.map((_, i) => sx(i)), rf.map(v => v == null ? null : sy(v)), color, k === "adaptive" ? 2.4 : 1.6);
+  }
+  const rows = Object.entries(POL).map(([k, [name, color]]) => {
+    const f = s.policies[k].flags.slice(0, upto + 1), b = s.bad.slice(0, upto + 1);
+    const ng = b.filter(x => !x).length, nb = b.filter(x => x).length;
+    const fa = f.filter((x, i) => x && !b[i]).length, de = f.filter((x, i) => x && b[i]).length;
+    return `<tr><td><i class="sw" style="background:${color}"></i>${name}</td><td>${pct(ng ? fa / ng : NaN)}</td><td>${nb ? `${de}/${nb}` : "0/0"}</td></tr>`;
+  }).join("");
+  $("tally").innerHTML = `<tr><th>policy</th><th>false alarms</th><th>faults caught</th></tr>${rows}<tr><td colspan="3" style="color:#8aa0b4">${upto + 1} of ${n} runs replayed</td></tr>`;
+}
+$("scene").onchange = () => { cancelAnimationFrame(playing); drawStream(Number($("scene").value), 0); };
+$("play").onclick = () => {
+  cancelAnimationFrame(playing); const si = Number($("scene").value), n = demo.scenes[si].scores.length; let i = 0;
+  const tick = () => { i = Math.min(n - 1, i + Math.max(1, Math.round(n / 240))); drawStream(si, i); if (i < n - 1) playing = requestAnimationFrame(tick); };
+  tick();
+};
+$("tabLive").onclick = () => { $("live").classList.remove("hidden"); $("stream").classList.add("hidden"); $("tabLive").classList.add("on"); $("tabStream").classList.remove("on"); };
+$("tabStream").onclick = () => { $("stream").classList.remove("hidden"); $("live").classList.add("hidden"); $("tabStream").classList.add("on"); $("tabLive").classList.remove("on"); drawStream(Number($("scene").value), 0); };
 init();
 </script>
 </body>

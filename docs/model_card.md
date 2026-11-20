@@ -33,7 +33,7 @@ Chronological fold of the Bosch CNC Machining dataset: trained on healthy record
 
 ## What the false-alarm promise means
 
-The conformal threshold keeps the false-alarm rate at or below α when new healthy recordings are exchangeable with the calibration recordings. Under a new process, machine or time period this can fail badly (see `reports/figures/target_vs_achieved_*.png`). The streaming policy studied in this repository, delayed-label admission with an ACI correction, keeps achieved rates close to target under machine and time shift when operator confirmations arrive with a delay, but its control is long-run and empirical, not a finite-sample guarantee, and it needs label coverage of roughly 25 to 50% of runs to stay near target.
+The conformal threshold keeps the false-alarm rate at or below α when new healthy recordings are exchangeable with the calibration recordings. Under a new process, machine or time period this can fail badly (see `reports/figures/target_vs_achieved_*.png`). The service makes its decisions with the online delayed-label calibrator: confirmed-healthy runs update the threshold, an ACI correction keeps the working α on budget, and faulty confirmations never enter the calibration set. In the streaming study this policy keeps achieved rates close to target under machine and time shift when operator confirmations arrive with a delay, but its control is long-run and empirical, not a finite-sample guarantee, and it needs label coverage of roughly 25 to 50% of runs to stay near target.
 
 ## Known failure modes
 

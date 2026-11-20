@@ -3,4 +3,4 @@ services:
     build: .
     ports: ["8000:8000"]
     volumes:
-      - ./data/raw:/app/data/raw:ro   # replay recordings come from the local dataset download
+      - ./data:/app/data:ro   # optional: manifest and recordings from `make data` enable single-recording replay

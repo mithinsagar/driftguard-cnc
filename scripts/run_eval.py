@@ -62,7 +62,7 @@ def ae_window_scores(df, fd, file_idx, seed, log) -> tuple[np.ndarray, dict]:
     t0 = time.time()
     model = AEScorer(seed=seed, epochs=AE_EPOCHS).fit(tr, va, log=log)
     fit_s = time.time() - t0
-    if fd.proto == "time":  # the deployment model: export_edge.py quantizes exactly this network
+    if fd.proto == "time" and seed == 0:  # the deployment model: export_edge.py quantizes exactly this network
         import torch
 
         Path("artifacts").mkdir(exist_ok=True)

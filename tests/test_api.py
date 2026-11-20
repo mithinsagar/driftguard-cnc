@@ -19,19 +19,34 @@ def client():
     return TestClient(app)
 
 
+def _signal(seed=0, n=6000):
+    return np.random.default_rng(seed).normal(size=(n, 3)).astype(float)
+
+
 def test_health(client):
     assert client.get("/v1/health").json()["status"] == "ok"
 
 
-def test_score_and_fault(client):
-    rng = np.random.default_rng(0)
-    sig = rng.normal(size=(6000, 3)).astype(float)
-    r = client.post("/v1/score", json={"samples": sig.tolist()}).json()
-    assert r["decision"] in {"NORMAL", "ANOMALY"} and r["n_windows"] == 5
+def test_score_returns_run_id_and_sensor_faults_are_separate(client):
+    r = client.post("/v1/score", json={"samples": _signal().tolist()}).json()
+    assert r["decision"] in {"NORMAL", "ANOMALY"} and r["n_windows"] == 5 and r["run_id"]
+    sig = _signal(1)
     sig[1000:2500, 1] = 0.0
-    r = client.post("/v1/score", json={"samples": sig.tolist()}).json()
-    assert r["decision"] == "SENSOR_FAULT"
+    assert client.post("/v1/score", json={"samples": sig.tolist()}).json()["decision"] == "SENSOR_FAULT"
+
+
+def test_operator_feedback_updates_the_calibrator(client):
+    client.post("/v1/reset")
+    run = client.post("/v1/score", json={"samples": _signal(2).tolist()}).json()["run_id"]
+    state = client.post("/v1/feedback", json={"run_id": run, "healthy": True}).json()
+    assert state["confirmed_healthy"] == 1
+    assert client.post("/v1/feedback", json={"run_id": run, "healthy": True}).status_code == 404
 
 
 def test_alpha_below_minimum_rejected(client):
     assert client.put("/v1/config", json={"alpha": 0.0001}).status_code == 422
+
+
+def test_demo_streams_available(client):
+    scenes = client.get("/v1/demo/streams").json()["scenes"]
+    assert all({"frozen", "adaptive", "w1acas"} <= set(s["policies"]) for s in scenes)

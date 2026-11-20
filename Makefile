@@ -1,9 +1,9 @@
 PY := .venv/bin/python
 SEEDS ?= 0
 
-.PHONY: setup data eval stream export tables verify test lint demo docker clean all
+.PHONY: setup data eval stream holdout export tables verify test lint demo docker clean all
 
-all: data eval stream export tables test
+all: data eval stream holdout export tables test
 
 setup:            ## virtual environment with pinned dependencies
 	/opt/homebrew/bin/python3.12 -m venv .venv || python3 -m venv .venv
@@ -25,15 +25,22 @@ stream:           ## streaming label-delay study (claim C2): alpha sweeps, all s
 	$(PY) scripts/run_fewshot.py --scorer B2 --alpha 0.05
 	$(PY) scripts/run_fewshot.py --scorer B0 --alpha 0.05
 
-export:           ## ONNX FP32 + static INT8, parity and latency (claim C3)
+holdout:          ## held-out streaming protocol (tune on first halves, score second halves)
+	$(PY) scripts/run_holdout.py --proto lomo time --scorers B0 B1 B2 AE --seeds $(SEEDS)
+
+export:           ## ONNX FP32 + static INT8, parity and latency (claim C3), detection latency, replay scenes
 	$(PY) scripts/export_edge.py
+	$(PY) scripts/detection_latency.py
+	$(PY) scripts/make_demo_streams.py
 
 tables:           ## results/summary.json, docs/*_tables.md, figures, README results, model card
 	$(PY) scripts/make_tables.py
 	$(PY) scripts/make_stream_tables.py
+	$(PY) scripts/make_holdout_tables.py
 	$(PY) scripts/make_headline.py
 	$(PY) scripts/update_readme.py
 	$(PY) scripts/update_model_card.py
+	$(PY) scripts/make_report.py
 
 verify:           ## re-run a fast subset and compare to committed results within tolerance
 	$(PY) scripts/verify.py

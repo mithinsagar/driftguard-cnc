@@ -14,3 +14,4 @@ results/scores/*_quick.npz
 !/artifacts/ae_int8.onnx
 !/artifacts/calibration.json
 !/artifacts/ae_time_fold.pt
+!/artifacts/demo_streams.json

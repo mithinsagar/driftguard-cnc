@@ -1,5 +1,9 @@
 """DriftGuard-CNC service: sensor gate -> INT8 ONNX autoencoder -> file score -> calibrated decision.
 
+Decisions use the online delayed-label calibrator (policy P5 of the streaming study): the threshold adapts as operators
+confirm runs as healthy, possibly many runs later, and ACI keeps the achieved false-alarm rate on the chosen budget.
+The fixed split-conformal and static-percentile thresholds are reported alongside for comparison.
+
 Run: uvicorn driftguard.serve.app:app --port 8000   (artifacts/ produced by `make export`)
 The service refuses to start if the calibration file was computed for a different model (SHA-256 binding).
 """
@@ -8,7 +12,9 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import threading
 import time
+import uuid
 from pathlib import Path
 
 import numpy as np
@@ -17,6 +23,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
+from driftguard.calibration.adaptive import AdaptiveCalibrator
 from driftguard.calibration.conformal import conformal_pvalue, min_alpha, split_conformal_threshold, static_percentile
 from driftguard.data.dataset import load_signal
 from driftguard.features.dsp import windows
@@ -35,6 +42,11 @@ class ScoreRequest(BaseModel):
     samples: list[list[float]] = Field(..., description="n x 3 accelerations (X, Y, Z) at 2 kHz")
 
 
+class Feedback(BaseModel):
+    run_id: str
+    healthy: bool = Field(..., description="operator confirmation: true = the run was healthy, false = it was faulty")
+
+
 def _load():
     cal = json.loads((ART / "calibration.json").read_text())
     model = ART / cal["model"]
@@ -45,14 +57,16 @@ def _load():
 
 
 CAL, SCORER = _load()
-STATE = {"alpha": CAL["default_alpha"]}
+CAL_SCORES = np.asarray(CAL["cal_scores"], dtype=float)
+ADAPTIVE = AdaptiveCalibrator(CAL_SCORES, alpha=CAL["default_alpha"])
+LOCK = threading.Lock()
 MANIFEST = pd.read_csv("data/manifest.csv").set_index("file_id") if Path("data/manifest.csv").exists() else None
-app = FastAPI(title="DriftGuard-CNC", version="1.0")
+DEMO = json.loads((ART / "demo_streams.json").read_text()) if (ART / "demo_streams.json").exists() else {"scenes": []}
+app = FastAPI(title="DriftGuard-CNC", version="1.1")
 
 
-def thresholds(alpha: float) -> dict:
-    cal = np.asarray(CAL["cal_scores"])
-    return {"conformal": split_conformal_threshold(cal, alpha),
+def fixed_thresholds(alpha: float) -> dict:
+    return {"conformal": split_conformal_threshold(CAL_SCORES, alpha),
             "static_percentile": static_percentile(np.asarray(CAL["val_scores"]), 100 * (1 - alpha))}
 
 
@@ -67,7 +81,7 @@ def file_score(win_scores: np.ndarray) -> float:
     return float(np.sort(win_scores)[-k:].mean())
 
 
-def decide(signal: np.ndarray) -> dict:
+def decide(signal: np.ndarray, record: bool = True) -> dict:
     t0 = time.perf_counter()
     w = windows(signal)
     if len(w) == 0:
@@ -79,11 +93,17 @@ def decide(signal: np.ndarray) -> dict:
                 "latency_ms": round((time.perf_counter() - t0) * 1e3, 2), "model_sha256": CAL["model_sha256"]}
     ws = SCORER.score(w)
     s = file_score(ws)
-    thr = thresholds(STATE["alpha"])
-    return {"decision": "ANOMALY" if s > thr["conformal"] else "NORMAL", "file_score": s, "window_scores": ws.tolist(),
-            "threshold": thr["conformal"], "static_threshold": thr["static_percentile"], "alpha": STATE["alpha"],
-            "p_value": conformal_pvalue(np.asarray(CAL["cal_scores"]), s), "n_windows": len(w),
-            "latency_ms": round((time.perf_counter() - t0) * 1e3, 2), "model_sha256": CAL["model_sha256"]}
+    with LOCK:
+        thr = ADAPTIVE.threshold()
+        run_id = uuid.uuid4().hex[:12]
+        flagged = ADAPTIVE.record(run_id, s) if record else bool(s > thr)
+        state = ADAPTIVE.state()
+    fixed = fixed_thresholds(ADAPTIVE.alpha)
+    return {"run_id": run_id if record else None, "decision": "ANOMALY" if flagged else "NORMAL", "file_score": s,
+            "threshold": thr, "alpha": ADAPTIVE.alpha, "alpha_t": state["alpha_t"],
+            "fixed_conformal_threshold": fixed["conformal"], "static_threshold": fixed["static_percentile"],
+            "p_value_vs_initial_calibration": conformal_pvalue(CAL_SCORES, s), "window_scores": ws.tolist(), "n_windows": len(w),
+            "latency_ms": round((time.perf_counter() - t0) * 1e3, 2), "model_sha256": CAL["model_sha256"], "calibrator": state}
 
 
 @app.get("/")
@@ -93,26 +113,46 @@ def index():
 
 @app.get("/v1/health")
 def health():
-    return {"status": "ok", "model_sha256": CAL["model_sha256"][:16], "n_cal": len(CAL["cal_scores"])}
+    return {"status": "ok", "model_sha256": CAL["model_sha256"][:16], "n_cal": len(CAL_SCORES)}
 
 
 @app.get("/v1/config")
 def get_config():
-    return {"alpha": STATE["alpha"], "min_alpha": min_alpha(len(CAL["cal_scores"])), **thresholds(STATE["alpha"]),
-            "n_cal": len(CAL["cal_scores"]), "fold": CAL["fold"], "aggregation": CAL.get("aggregation", "top10")}
+    with LOCK:
+        state = ADAPTIVE.state()
+    return {"alpha": ADAPTIVE.alpha, "min_alpha": min_alpha(len(CAL_SCORES)), **fixed_thresholds(ADAPTIVE.alpha), "adaptive": state,
+            "n_cal": len(CAL_SCORES), "fold": CAL["fold"], "aggregation": CAL.get("aggregation", "top10")}
 
 
 @app.put("/v1/config")
 def put_config(cfg: Config):
-    if cfg.alpha < min_alpha(len(CAL["cal_scores"])):
-        raise HTTPException(422, f"alpha below {min_alpha(len(CAL['cal_scores'])):.4f} cannot be promised with this calibration set")
-    STATE["alpha"] = cfg.alpha
+    if cfg.alpha < min_alpha(len(CAL_SCORES)):
+        raise HTTPException(422, f"alpha below {min_alpha(len(CAL_SCORES)):.4f} cannot be promised with this calibration set")
+    with LOCK:
+        ADAPTIVE.reset(alpha=cfg.alpha)
     return get_config()
 
 
 @app.post("/v1/score")
 def score(req: ScoreRequest):
     return decide(np.asarray(req.samples, dtype=np.float32))
+
+
+@app.post("/v1/feedback")
+def feedback(fb: Feedback):
+    with LOCK:
+        ok = ADAPTIVE.feedback(fb.run_id, fb.healthy)
+        state = ADAPTIVE.state()
+    if not ok:
+        raise HTTPException(404, "unknown or already confirmed run id")
+    return state
+
+
+@app.post("/v1/reset")
+def reset():
+    with LOCK:
+        ADAPTIVE.reset()
+        return ADAPTIVE.state()
 
 
 @app.get("/v1/replay/files")
@@ -139,3 +179,9 @@ def replay(file_id: str, fault: str | None = None):
     out.update({"file_id": file_id, "label": MANIFEST.loc[file_id, "label"], "process": MANIFEST.loc[file_id, "process"],
                 "machine": MANIFEST.loc[file_id, "machine"], "waveform_z": np.nan_to_num(z[::step]).tolist()})
     return out
+
+
+@app.get("/v1/demo/streams")
+def demo_streams():
+    """Precomputed replays of real held-out streams through four calibration policies (scripts/make_demo_streams.py)."""
+    return DEMO
