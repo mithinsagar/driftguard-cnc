@@ -7,7 +7,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: pip install numpy scipy h5py pandas scikit-learn pytest ruff tabulate
+      - run: pip install numpy scipy h5py pandas scikit-learn pytest ruff==0.17.6 tabulate
       - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
       - run: ruff check src scripts tests
       - run: PYTHONPATH=src pytest -q tests/test_dsp_synthetic.py tests/test_conformal_math.py tests/test_gate_faults.py tests/test_splits_no_leakage.py tests/test_stream_policies.py

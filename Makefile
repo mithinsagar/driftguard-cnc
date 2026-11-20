@@ -9,6 +9,7 @@ setup:            ## virtual environment with pinned dependencies
 	/opt/homebrew/bin/python3.12 -m venv .venv || python3 -m venv .venv
 	$(PY) -m pip install --upgrade pip
 	$(PY) -m pip install -r requirements.lock
+	$(PY) -m pip install --no-deps granite-tsfm==0.3.12   # IBM W1-ACAS baseline; its pins (torch<2.12) are stricter than needed
 	$(PY) -c "import torch; print('MPS available:', torch.backends.mps.is_available())"
 
 data:             ## download (verified against git blob SHA-1), audit, feature cache, split manifests
