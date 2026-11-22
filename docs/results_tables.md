@@ -10,7 +10,7 @@ Values are means over training seeds; brackets give the lowest and highest seed.
 | lomo | RMS heuristic | 1 | 0.411 | 0.856 |
 | lomo | Isolation Forest | 3 | 0.101 [0.079, 0.114] | 0.584 [0.572, 0.592] |
 | lomo | XGBoost (supervised) | 3 | 0.669 [0.658, 0.676] | 0.901 [0.893, 0.910] |
-| lopo | 1D-CNN autoencoder | 1 | 0.403 | 0.728 |
+| lopo | 1D-CNN autoencoder | 3 | 0.403 [0.402, 0.403] | 0.732 [0.728, 0.738] |
 | lopo | RMS heuristic | 1 | 0.559 | 0.854 |
 | lopo | Isolation Forest | 3 | 0.241 [0.238, 0.245] | 0.554 [0.550, 0.560] |
 | lopo | XGBoost (supervised) | 3 | 0.896 [0.892, 0.901] | 0.939 [0.937, 0.942] |
@@ -23,12 +23,12 @@ Values are means over training seeds; brackets give the lowest and highest seed.
 
 | Scorer | Strategy | Seeds | Achieved FAR | Mean abs. calibration error | Folds violating (FAR > 7%) | Recall |
 |---|---|---|---|---|---|---|
-| 1D-CNN autoencoder | static percentile | 1 | 9.4% | 8.0% | 33.3% of 15 | 30.0% |
-| 1D-CNN autoencoder | split conformal | 1 | 7.8% | 7.2% | 20.0% of 15 | 30.0% |
-| 1D-CNN autoencoder | Mondrian (per process) | 1 | 7.8% | 7.2% | 20.0% of 15 | 30.0% |
-| 1D-CNN autoencoder | similarity-weighted (raw) | 1 | 0.1% | 4.9% | 0.0% of 15 | 1.4% |
-| 1D-CNN autoencoder | similarity-weighted + ESS fallback | 1 | 7.7% | 7.5% | 20.0% of 15 | 30.0% |
-| 1D-CNN autoencoder | IBM W1-ACAS (ICLR 2026) | 1 | 4.5% | 4.0% | 20.0% of 15 | 30.0% |
+| 1D-CNN autoencoder | static percentile | 3 | 9.5% [9.4%, 9.7%] | 8.0% [8.0%, 8.1%] | 28.9% [26.7%, 33.3%] of 15 | 29.5% [28.6%, 30.0%] |
+| 1D-CNN autoencoder | split conformal | 3 | 8.2% [7.8%, 8.7%] | 7.5% [7.2%, 7.9%] | 20.0% [20.0%, 20.0%] of 15 | 29.5% [28.6%, 30.0%] |
+| 1D-CNN autoencoder | Mondrian (per process) | 3 | 8.2% [7.8%, 8.7%] | 7.5% [7.2%, 7.9%] | 20.0% [20.0%, 20.0%] of 15 | 29.5% [28.6%, 30.0%] |
+| 1D-CNN autoencoder | similarity-weighted (raw) | 3 | 0.8% [0.1%, 1.5%] | 5.1% [4.9%, 5.4%] | 4.4% [0.0%, 6.7%] of 15 | 1.4% [1.4%, 1.4%] |
+| 1D-CNN autoencoder | similarity-weighted + ESS fallback | 3 | 7.3% [6.6%, 7.7%] | 7.3% [6.8%, 7.6%] | 20.0% [20.0%, 20.0%] of 15 | 29.5% [28.6%, 30.0%] |
+| 1D-CNN autoencoder | IBM W1-ACAS (ICLR 2026) | 3 | 4.7% [4.5%, 5.0%] | 4.2% [4.0%, 4.4%] | 20.0% [20.0%, 20.0%] of 15 | 29.0% [27.1%, 30.0%] |
 | RMS heuristic | static percentile | 1 | 5.7% | 5.7% | 33.3% of 15 | 45.7% |
 | RMS heuristic | split conformal | 1 | 5.5% | 4.8% | 26.7% of 15 | 44.3% |
 | RMS heuristic | Mondrian (per process) | 1 | 5.5% | 4.8% | 26.7% of 15 | 44.3% |
