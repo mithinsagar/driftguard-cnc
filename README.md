@@ -27,6 +27,10 @@ Tables: [held-out streaming](docs/holdout_tables.md), [offline calibration, all 
 
 ![streaming replay](reports/figures/stream_replay.gif)
 
+A 66-second captioned walkthrough of the dashboard (scoring, operator feedback, a sensor fault, two real streams):
+[docs/demo/driftguard_demo.mp4](docs/demo/driftguard_demo.mp4), with a matching narration script in
+[docs/demo/narration.md](docs/demo/narration.md). `scripts/make_demo_video.py` records it again from a running service.
+
 `make demo` starts the FastAPI service and dashboard on http://localhost:8000. Two tabs:
 
 - **Streaming replay** (above): real recordings from a machine or year the scorer never saw, in time order, through four policies at α = 5%. On unseen machine M02 the frozen threshold climbs past 50% false alarms over the last 50 healthy runs, W1-ACAS recovers after a spike, and the delayed-label policy holds the budget while catching more of the faulty runs.
